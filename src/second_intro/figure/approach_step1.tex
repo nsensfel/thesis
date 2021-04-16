@@ -1,0 +1,34 @@
+\begin{tikzpicture}[
+  font=\sffamily,
+  every matrix/.style={ampersand replacement=\&,column sep=2.5cm,row sep=1cm},
+  source/.style={draw,thick,rounded corners,fill=yellow!20,inner sep=.3cm},
+  process/.style={draw,thick,circle,fill=blue!20},
+  sink/.style={source,fill=green!20},
+  datastore/.style={draw,very thick,shape=datastore,inner sep=.3cm},
+  dots/.style={gray,scale=2},
+  to/.style={->,>=stealth',shorten >=1pt,semithick,font=\sffamily\footnotesize},
+  every node/.style={align=center}]
+
+  % Position the nodes using a matrix layout
+  \matrix{
+    \node[datastore] (architecture) {Architecture};
+      \& \node[sink] (identification) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence Identification\\
+            (Chapter~\ref{cha:identifying_cache_coherence})
+         \end{tabular}
+         };
+      \&
+    \node[datastore] (cacheprotocol) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\ Protocol
+         \end{tabular}
+         };
+      \\
+  };
+
+  % Draw the arrows between the nodes and label them.
+  \draw[to] (architecture) to (identification);
+
+  \draw[to] (identification) to (cacheprotocol);
+\end{tikzpicture}

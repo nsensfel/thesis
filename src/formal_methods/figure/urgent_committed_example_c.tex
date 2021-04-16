@@ -1,0 +1,18 @@
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
+                    semithick]
+   \node[initial,state] (S0)              {$S_8$};
+
+   \path[every node/.style={sloped, anchor=center, yshift=1em}]
+      (S0) edge [loop above] node [above=-1em]{
+      \begin{tabular}{l}
+         $\textbf{chan3}!$\\
+      \end{tabular}
+      } (S0)
+
+      (S0) edge [loop below] node [below=1em]{
+      \begin{tabular}{l}
+         $\textbf{chan2}?$\\
+      \end{tabular}
+      } (S0)
+   ;
+\end{tikzpicture}

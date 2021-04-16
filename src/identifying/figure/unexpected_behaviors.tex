@@ -1,0 +1,144 @@
+\begin{tabular}{|c|c|c|}
+\cline{2-3}
+\multicolumn{1}{c}{}
+& \multicolumn{2}{|c|}{$\langle$\texttt{load, -, -}$\rangle$}
+\\
+
+\hline
+   \multirow{2}{*}{\textbf{Origin}}
+ & \multicolumn{2}{c|}{\textbf{Behavior}}
+\\
+ & \textbf{Expected}
+ & \textbf{Observed}
+\\
+\hline
+
+%%%% I/\benchi{}/\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{\textbf{$\langle$\benchi{}},\benchi{},\benchi{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2D Accesses,\\
+      8000 Reloads From CoreNet
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      16000 L2D Accesses,\\
+      8000 Reloads From CoreNet,\\
+      1166700 CPU Cycles
+   \end{tabular}
+\\
+\hline
+
+%%%% I/\benchi{}/\benchs{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{\textbf{$\langle$\benchi{}},\benchi{},\benchs{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2D Accesses,\\
+      8000 Reloads From CoreNet
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      16000 L2D Accesses,\\
+      8000 Reloads From CoreNet,\\
+      850600 CPU Cycles
+   \end{tabular}
+\\
+\hline
+
+%%%% I/\benchi{}/X %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\textbf{\benchi{}},\benchi{},\benchx{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2D Accesses,\\
+      8000 Reloads From CoreNet
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      16000 L2D Accesses,\\
+      8000 Reloads From CoreNet,\\
+      1172600 CPU Cycles
+   \end{tabular}
+\\
+\hline
+\end{tabular}
+
+\vspace{1em}
+
+\begin{tabular}{|c|c|c|}
+\cline{2-3}
+\multicolumn{1}{c}{}
+& \multicolumn{2}{|c|}{$\langle$\texttt{-, -, load}$\rangle$}
+\\
+
+\hline
+   \multirow{2}{*}{\textbf{Origin}}
+ & \multicolumn{2}{c|}{\textbf{Behavior}}
+\\
+ & \textbf{Expected}
+ & \textbf{Observed}
+\\
+\hline
+
+%%%% I/\benchi{}/\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\textbf{\benchi{}},\benchi{},\benchi{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 External Snoop Requests
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      8000 External Snoop Requests
+   \end{tabular}
+\\
+\hline
+
+%%%% F/\benchi{}/\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\textbf{\benchs{}},\benchi{},\benchi{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      8000 External Snoop Requests\\
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      \colorbox{pink}{\textbf{8000 L2 Snoop Pushes}},\\
+      8000 External Snoop Requests,\\
+      \colorbox{pink}{\textbf{8000 SINTs}}
+   \end{tabular}
+\\
+\hline
+
+%%%% S/\benchi{}/I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\textbf{\benchx{}},\benchi{},\benchi{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      8000 External Snoop Requests
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      8000 External Snoop Requests
+   \end{tabular}
+\\
+\hline
+\end{tabular}

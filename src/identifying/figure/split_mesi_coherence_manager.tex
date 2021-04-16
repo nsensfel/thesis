@@ -1,0 +1,165 @@
+\begin{tabular}{|l||c|c|c|c||c|c|}
+ \hline
+
+ \multicolumn{7}{|c|}{\textbf{Coherence Manager}}\\
+
+ \hline
+
+ \multirow{2}{*}{\textbf{State}}
+ & \multicolumn{4}{c||}{\textbf{Received Queries}}
+ & \multicolumn{2}{c|}{\textbf{Data Reply}}
+ \\
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ & \texttt{GetS}
+ & \texttt{GetM}
+ &
+   \begin{tabular}{@{}c@{}}
+      \texttt{PutM}\\
+      (Owner)
+   \end{tabular}
+ &
+   \begin{tabular}{@{}c@{}}
+      \texttt{PutM}\\
+      (Other)
+   \end{tabular}
+ & \texttt{data}
+ & \texttt{no-data}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{I}
+
+ % GetS
+ & \texttt{read},
+   \senddataact{\texttt{s}}{\texttt{data-e}},
+   \storeowneract{},
+   \setstateact{\texttt{M}}
+
+ % GetM
+ & \senddataact{\texttt{s}}{\texttt{data}},
+   \storeowneract{},
+   \setstateact{\texttt{M}}
+
+ % PutM (owner)
+ & \disablecell{}
+
+ % PutM (other)
+ & -
+
+ % Data & Data-Exclusive
+ & \disablecell{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{M}
+
+ % GetS
+ & \resetowneract{}, \setstateact{\texttt{S\textsuperscript{D}}}
+
+ % GetM
+ & \storeowneract{}
+
+ % PutM (owner)
+ & \resetowneract{}, \setstateact{\texttt{I\textsuperscript{D}}}
+
+ % PutM (other)
+ & -
+
+ % Data & Data-Exclusive
+ & write, \setstateact{\texttt{IoS\textsuperscript{B}}}
+ & \setstateact{\texttt{IoS\textsuperscript{B}}}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{I\textsuperscript{D}}
+
+ % GetS
+ & \texttt{stall}
+
+ % GetM
+ & \texttt{stall}
+
+ % PutM (owner)
+ & \texttt{stall}
+
+ % PutM (other)
+ & -
+
+ % Data & Data-Exclusive
+ & write, resume, \setstateact{\texttt{I}}
+ & resume, \setstateact{\texttt{I}}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{S\textsuperscript{D}}
+
+ % GetS
+ & \texttt{stall}
+
+ % GetM
+ & \texttt{stall}
+
+ % PutM (owner)
+ & \texttt{stall}
+
+ % PutM (other)
+ & -
+
+ % Data & Data-Exclusive
+ & write, resume, \setstateact{\texttt{S}}
+ & resume, \setstateact{\texttt{S}}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IoS\textsuperscript{B}}
+
+ % GetS
+ & \resetowneract{}, \setstateact{\texttt{S}}
+
+ % GetM
+ & \storeowneract{}
+
+ % PutM (owner)
+ & \resetowneract{}, \setstateact{\texttt{I}}
+
+ % PutM (other)
+ & -
+
+ % Data & Data-Exclusive
+ & \disablecell{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{S}
+
+ % GetS
+ &
+   \texttt{read},
+   \senddataact{\texttt{s}}{\texttt{data}}
+
+ % GetM
+ & \senddataact{\texttt{s}}{\texttt{data}}, \storeowneract{},
+   \setstateact{\texttt{M}}
+
+ % PutM (owner)
+ & \disablecell{}
+
+ % PutM (other)
+ & -
+
+ % Data & Data-Exclusive
+ & \disablecell{}
+ & \disablecell{}
+ \\
+ \hline
+\end{tabular}
+

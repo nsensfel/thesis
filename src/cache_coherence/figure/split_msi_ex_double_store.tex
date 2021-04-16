@@ -1,0 +1,160 @@
+\begin{tikzpicture}[node distance=0.4cm,auto,>=stealth']
+    \node[] (CU0) {$CU_0$};
+    \node[right = of CU0] (CC0) {$CC_0$};
+    \node[right = of CC0] (CU1) {$CU_1$};
+    \node[right = of CU1] (CC1) {$CC_1$};
+    \node[right = of CC1] (CU2) {$CU_2$};
+    \node[right = of CU2] (CC2) {$CC_2$};
+    \node[right = of CC2] (BUS) {\begin{tabular}{l}Inter-\\connect\end{tabular}};
+    \node[right = of BUS, text centered, text width=5em,xshift=-0.5cm] (MEM)
+      {Coherence Manager};
+
+
+
+    \node[below of=CU0, node distance=16cm] (CU0_ground) {};
+    \node[below of=CC0, node distance=16cm] (CC0_ground) {};
+    \node[below of=CU1, node distance=16cm] (CU1_ground) {};
+    \node[below of=CC1, node distance=16cm] (CC1_ground) {};
+    \node[below of=CU2, node distance=16cm] (CU2_ground) {};
+    \node[below of=CC2, node distance=16cm] (CC2_ground) {};
+    \node[below of=BUS, node distance=16cm] (BUS_ground) {};
+    \node[below of=MEM, node distance=16cm] (MEM_ground) {};
+    %
+    \draw (CU0) -- (CU0_ground);
+    \draw (CC0) -- (CC0_ground);
+    \draw (CU1) -- (CU1_ground);
+    \draw (CC1) -- (CC1_ground);
+    \draw (CU2) -- (CU2_ground);
+    \draw (CC2) -- (CC2_ground);
+    \draw (BUS) -- (BUS_ground);
+    \draw (MEM) -- (MEM_ground);
+
+    \node[draw, fill=white, below = of CC0, yshift=0.2cm] (CC0M)
+      {\begin{tabular}{l}\texttt{M}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC1, yshift=0.2cm] (CC1I)
+      {\begin{tabular}{l}\texttt{I}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC2, yshift=0.2cm] (CC2I)
+      {\begin{tabular}{l}\texttt{I}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of MEM, yshift=0.2cm] (MEMIorS)
+      {\begin{tabular}{l}\texttt{M}\\\texttt{o} = $CC_0$\end{tabular}};
+
+
+    \draw[->]
+      ($(CU0)!0.125!(CU0_ground)$) -- node[above,scale=1,midway]
+         {\texttt{evict}} ($(CC0)!0.125!(CC0_ground)$);
+
+    \draw[->]
+      ($(CU1)!0.125!(CU1_ground)$) -- node[above,scale=1,midway]
+         {\texttt{store}} ($(CC1)!0.125!(CC1_ground)$);
+
+    \draw[->]
+      ($(CU2)!0.125!(CU2_ground)$) -- node[above,scale=1,midway]
+         {\texttt{store}} ($(CC2)!0.125!(CC2_ground)$);
+
+
+    \node[draw, fill=white, below = of CC0, yshift=-1.5cm] (CC0ISBDtoISD)
+      {\begin{tabular}{l}\texttt{MI\textsuperscript{B}}\\$\langle\texttt{PutM}\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC1, yshift=-1.5cm] (CC1ISBDtoISD)
+      {\begin{tabular}{l}\texttt{IM\textsuperscript{BD}}\\$\langle\texttt{GetM}\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC2, yshift=-1.5cm] (CC2ISBDtoISD)
+      {\begin{tabular}{l}\texttt{IM\textsuperscript{BD}}\\$\langle\texttt{GetM}\rangle$\end{tabular}};
+
+
+    \draw[o-o] ($(BUS)!0.232!(BUS_ground)$) -- node[above,scale=1,midway]
+       {\texttt{GetM}} ($(CC1)!0.232!(CC1_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.265!(BUS_ground)$) -- node[above, scale=1,midway]
+       {\texttt{GetM}} ($(MEM)!0.265!(MEM_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.265!(BUS_ground)$) -- node[pos=0.83,above,scale=1]
+       {\texttt{GetM}} ($(CC0)!0.265!(CC0_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.265!(BUS_ground)$) -- node[below,scale=1]
+       {\texttt{GetM}} ($(CC1)!0.265!(CC1_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.265!(BUS_ground)$) -- node[below,scale=1]
+       {\texttt{GetM}} ($(CC2)!0.265!(CC2_ground)$);
+
+
+    \node[draw, fill=white, below = of CC1, yshift=-4cm] (CC0ISDtoS)
+      {\begin{tabular}{l}\texttt{IM\textsuperscript{D}}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC0, yshift=-4cm] (CC0II)
+      {\begin{tabular}{l}\texttt{II\textsuperscript{B}}\\$\langle\texttt{PutM}\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of MEM, yshift=-4cm] (CC0II)
+      {\texttt{o}$\gets CC_1$};
+
+
+    \draw[o-o] ($(BUS)!0.385!(BUS_ground)$) -- node[above,scale=1,midway]
+       {\texttt{GetM}} ($(CC2)!0.385!(CC2_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.425!(BUS_ground)$) -- node[above, scale=1,midway]
+       {\texttt{GetM}} ($(MEM)!0.425!(MEM_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.425!(BUS_ground)$) -- node[pos=0.83,above,scale=1]
+       {\texttt{GetM}} ($(CC0)!0.425!(CC0_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.425!(BUS_ground)$) -- node[below,scale=1]
+       {\texttt{GetM}} ($(CC1)!0.425!(CC1_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.425!(BUS_ground)$) -- node[below,scale=1]
+       {\texttt{GetM}} ($(CC2)!0.425!(CC2_ground)$);
+
+
+    \node[draw, fill=white, below = of CC1, yshift=-6.8cm] (CC0IiI)
+      {\begin{tabular}{l}\texttt{IM\textsuperscript{D}I}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC2, yshift=-6.8cm] (CC0IiSDtoS)
+      {\begin{tabular}{l}\texttt{IM\textsuperscript{D}}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of MEM, yshift=-6.8cm] (CC0II)
+      {\texttt{o}$\gets CC_2$};
+
+    \draw[->] ($(CC0)!0.57!(CC0_ground)$) -- node[above,scale=1,midway]
+       {\texttt{data}} ($(BUS)!0.57!(BUS_ground)$);
+
+    \draw[<-] ($(CC1)!0.59!(CC1_ground)$) -- node[below,scale=1,midway]
+       {\texttt{data}} ($(BUS)!0.59!(BUS_ground)$);
+
+
+    \node[draw, fill=white, below = of CC1, yshift=-9cm] (CC0IiI)
+      {\begin{tabular}{l}\texttt{I}\\$\langle\rangle$\end{tabular}};
+
+    \draw[->] ($(CC1)!0.685!(CC1_ground)$) -- node[above,scale=1,midway]
+       {\texttt{data}} ($(BUS)!0.685!(BUS_ground)$);
+
+    \draw[<-] ($(CC2)!0.705!(CC2_ground)$) -- node[below,scale=1,midway]
+       {\texttt{data}} ($(BUS)!0.705!(BUS_ground)$);
+
+
+    \node[draw, fill=white, below = of CC2, yshift=-11cm] (CC0IiSDtoS)
+      {\begin{tabular}{l}\texttt{M}\\$\langle\rangle$\end{tabular}};
+
+
+    \draw[o-o] ($(BUS)!0.822!(BUS_ground)$) -- node[scale=1,midway,above]
+       {\texttt{PutM}} ($(CC0)!0.822!(CC0_ground)$);
+
+
+    \draw[|->, line width=1mm] ($(BUS)!0.858!(BUS_ground)$) -- node[pos=0.83,above,scale=1]
+       {\texttt{PutM}} ($(CC0)!0.858!(CC0_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.858!(BUS_ground)$) -- node[above,scale=1]
+       {\texttt{PutM}} ($(CC1)!0.858!(CC1_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.858!(BUS_ground)$) -- node[above,scale=1]
+       {\texttt{PutM}} ($(CC2)!0.858!(CC2_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.858!(BUS_ground)$) -- node[above,scale=1]
+       {\texttt{PutM}} ($(MEM)!0.858!(MEM_ground)$);
+
+
+    \node[draw, fill=white, below = of CC0, yshift=-13.5cm] (CC0II)
+      {\begin{tabular}{l}\texttt{I}\\$\langle\rangle$\end{tabular}};
+
+\end{tikzpicture}%

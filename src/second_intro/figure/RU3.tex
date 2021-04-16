@@ -1,0 +1,20 @@
+\begin{forest}
+  for tree = {
+    edge = {latex-},
+    parent anchor=south,
+    child anchor=north
+  },	
+  [RU3: Identification of interference and verified means of mitigation,conclusion, set width=11cm,
+    [{Check all identified interferences are mitigated ($\forall i \in \mathcal{I}$, $i$ mitigated)}, strategy, name=S, l sep+=2em,
+      [{Interferences $\mathcal{I}$ and their effect identified}, conclusion, set width=6.5cm,
+	[Check all identified interferences are classified, strategy, name=Y, l sep+=2em,
+	  [{Identification of all interference $\mathcal{I}$}, conclusion]
+          [{Classification of $c(i)$ effects}, label=above:{$\forall i \in \mathcal{I}$}, conclusion]
+      ]
+      ]
+      [{$i$ mitigated\\(e.g. prevention / blocking with run-time mechanism; impossible due to usage domain restriction; tolerance)}, conclusion, label=above:{$\forall i \in \mathcal{I}$},
+      ]			
+    ]
+  ]
+\end{forest}
+

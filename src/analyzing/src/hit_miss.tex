@@ -1,0 +1,399 @@
+\section{Analyzing Impact on Hit \& Miss}
+\label{sec:analysis:hit_and_miss}
+The most impactful effect interference can have on instructions is to prevent
+them from being able to retrieve memory elements that would otherwise be
+present in the cache. Thus, one way to look at the causes behind the WCET of a
+program is to see, for each instruction, whether retrieving the memory element
+they access from the cache requires the cache to fetch it or not.
+
+The analyses in this section provide the user with an understanding of which
+instructions cause caches to have to fetch memory elements (a time consumming
+operation), whether this fetching always has to happen, never does, or
+sometimes does (see Section~\ref{sec:analysis:instr_characterization}). It also
+shows how the model can be used for a similar purpose, but focused on memory
+elements themselves instead of each instruction (see
+Section~\ref{sec:analysis:mem_elem_accuracy}). In effect, these analyses point
+out what part of the programs should be the focus of attempts at execution time
+improvements.
+
+The same idea is employed in
+Section~\ref{sec:rel_work:handling_it:accepting_it}, which presented papers
+that use abstract interpretation in a way that makes all accesses be
+categorized as either \textit{always-hit}, \textit{always-miss},
+\textit{first-miss}, or \textit{uncategorized}. However, these papers did not
+account for cache coherence. Using our model, this categorization can be
+performed even on systems featuring cache coherence.
+
+To avoid any ambiguity, the definition of both cache hit and cache miss used in
+this chapter is provided below. The reason for \stallact{} actions being
+mentioned in those definitions is that as long as an event has not led to any
+transition other than ones which have a \stallact{} action, the component is not
+considered to have acknowledged the event's existence.
+
+\begin{definition}[Cache Hit]
+\label{def:cache_hit}
+A request is considered to have resulted in a cache hit if, according to the
+cache coherence protocol, the first triggered transition not featuring a
+\stallact{} action features a \hitact{} action.
+\end{definition}
+
+\begin{definition}[Cache Miss]
+\label{def:cache_miss}
+A request is considered to have resulted in a cache miss, according to the
+cache coherence protocol, the first triggered transition not featuring a
+\stallact{} action does not features a \hitact{} action.
+\end{definition}
+\begin{example}[Cache Hit and Miss]
+In the MESI protocol from Figure~\ref{fig:mesi_cc_table}
+(Section~\ref{sec:identification:mesi}), a \storeinstr{} instruction results in
+a cache hit for a memory element currently held in the \texttt{E}, \texttt{M}
+or even \texttt{MI\textsuperscript{B}} state. If the memory
+element is held in the \texttt{S} or the \texttt{I} state, the \storeinstr{}
+would result in a cache miss. Lastly, if the memory element is in the
+\texttt{IM\textsuperscript{D}} state, the categorization of the \storeinstr{}
+instruction would not be determined until some other state is reached because
+of the \stallact{} action.
+\end{example}
+
+The model, as presented in Chapter~\ref{cha:modeling_cache_coherence}, does not
+have any notion associated with either a cache miss or a cache hit.  This makes
+it impossible to simply use UPPAAL's model checking in order to detect them.
+The model has thus been modified to allow these analyses to be performed. These
+additions are detailed in the next sub-section.
+
+\subsection{Hit and Miss in the Model}
+\label{sec:analyzing:hit_miss_mod}
+Hitherto unmentioned are some aspects of the model ensuring that each
+cache hit and cache miss is kept track of. Indeed, the cache automaton from
+Section~\ref{sec:model:cache} was made so that:
+\paragraph{Cache Automata:}
+\begin{itemize}
+\item
+   The structure corresponding to a core request in the cache automata gets two
+   extra fields, \lstinline!is_cache_hit! and \lstinline!instruction_addr!,
+   described below.
+\item
+   The \lstinline!is_cache_hit! field defaults to \lstinline!true!, and will,
+   once the request is completed, indicate whether than request was a cache hit
+   or a cache miss. Thus, a request representation can be modified to be a
+   cache miss, but not the reverse.
+\item
+   The \lstinline!instruction_addr! field keeps track of which program line this
+   request stems from. Indeed, requests may be completed out of order, so this
+   index is necessary to trace the resulting categorization back to the program
+   itself.
+\item
+   There is a \textit{cache miss} action, which marks the current request as
+   being a cache miss.
+\item
+   An array, \lstinline!cache_local_address_infos!, is part of the local
+   variables, and has one cell per memory element. This array keeps track of the
+   number of both hit and miss observed by this cache for each memory element.
+\item
+   When acknowledging the completion of a request,
+   \lstinline!cache_local_address_infos! is updated according to whether the
+   request for that memory element was a cache hit or a cache miss.
+\end{itemize}
+
+The added \textit{cache miss} action is not explicitly part of the cache
+coherence protocol. Instead, the protocol switching tool presented in
+Section~\ref{sec:protocol_switching} adds it automatically.
+Upon generating the actions for the cache automata, the \textit{cache miss}
+action is added to any action list that contains neither a \stallact{} nor
+a \hitact{}.
+
+With these variables in the model, UPPAAL's model checking can be used to
+analyze cache hits and cache misses.
+
+\subsection{Instruction Characterization}
+\label{sec:analysis:instr_characterization}
+The instruction characterization analysis assigns to each instruction a
+category among \textit{always-hit}, \textit{always-miss}, and
+\textit{uncategorized}. The \textit{first-miss} category, which was present in
+Chapter~\ref{sec:rel_work:handling_it:accepting_it} cannot currently be
+detected by the model, as programs do not feature loops, meaning that each
+instruction is only performed once. As a result, instructions that would
+otherwise be characterized as \textit{first-miss} are indistinguishable from
+\textit{always-miss} ones.
+
+This categorization allows the user to determine which instructions are
+mostly unaffected by interference (all \textit{always-hit}), which ones are
+strongly affected (which are among the \textit{always-miss}), and which ones are
+likely to cause variation in execution time (all \textit{uncategorized}).
+
+This analysis requires a minimum of one model checking query per instruction,
+and a maximum of two per instruction (if the first one is
+inconclusive). The UPPAAL queries corresponding to the verification of an
+\textit{always-hit} or an \textit{always-miss} can be written for the
+10th instruction of Core1 as follows:
+\begin{itemize}
+\item \textbf{Always Hits:}\\
+$\agop{}($\lstinline!Cache1.completed_requests[0].instruction_addr!
+$= 9~\texttt{imply} $
+\lstinline!Cache1.completed_requests[0].is_cache_hit!$)$
+\item \textbf{Always Misses:}\\
+$\agop{}($\lstinline!Cache1.completed_requests[0].instruction_addr!
+$= 9~\texttt{imply}~(\texttt{not} $
+\lstinline!Cache1.completed_requests[0].is_cache_hit!$))$
+\end{itemize}
+The idea being that all requests completed by a cache are guaranteed to be in
+\lstinline!completed_requests[0]! (i.e.~the top of their cache's completed
+request queue) at one point or another, making it an ideal variable to analyze.
+\lstinline!Cache1! corresponds to the cache being analyzed, as the
+\lstinline!completed_requests! variable is local to each cache automaton.
+\lstinline!9! is the index of the 10th instruction. Thus, these queries check
+whether the completion of the 10th instruction in \lstinline!Cache1! always (or
+never, in the case of the \textit{always-miss}) results in a cache hit.
+
+This analysis does not separate the cache misses caused by cache coherence and
+those that are innate to the program itself (e.g.~the first access to a memory
+element is sure to be a cache miss). However, the analysis proposed in
+Section~\ref{sec:analysis:missing_link} provides a way to determine what
+categorization is the direct result of interference.
+
+Attempting to compare the results of this analysis with the system in different
+configurations (namely, in isolation compared to with shared variables) in
+order to figure out which cache misses are caused by cache coherence is in no
+way assured to work. Indeed, the interference can cause cache evictions, which
+in turn change the effects of the cache's replacement policy: if a cache line
+is freed because of interference, the cache will have one extra available slot
+at this point in the program compared to the run in isolation, causing a
+divergence that is likely to void the relation between categorization in
+isolation and categorization with shared variables. Indeed, this may even cause
+instructions to be more accurate with shared variables than in isolation if an
+interference ends up evicting a memory element never to be accessed later and
+causes a memory element that is accessed later to not be removed by the cache
+replacement policy because of the freed cache line. Nevertheless, even without
+distinction of which cache misses are caused by interference, the categorizing
+the accuracy of instructions provides useful information.
+
+\begin{example}[Application to the Model of Section~\ref{sec:analysis:demo_model}]
+\label{ex:analysis:instr_chara}
+Applying the instruction characterization to the model of
+Section~\ref{sec:analysis:demo_model} yields the results shown in
+Figure~\ref{fig:analysis:demo_chara_progs}. \textit{AM} denotes
+\textit{always-miss}, \textit{AH} stands for \textit{always-hit}, and
+\textit{UN} is for all other \textit{uncategorized} cases.
+\begin{figure}[hbt!]
+\begin{center}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\begin{lstlisting}
+{INSTR_STORE,  1, 0, 0} is AM (AM)
+{INSTR_STORE,  2, 0, 0} is AM (AM)
+{INSTR_LOAD,   1, 0, 0} is UN (AH)
+{INSTR_STORE,  1, 0, 0} is UN (AH)
+{INSTR_LOAD,   3, 0, 0} is AM (AM)
+{INSTR_STORE,  2, 0, 0} is AM (AH)
+{INSTR_LOAD,   1, 0, 0} is AH (AH)
+{INSTR_STORE,  1, 0, 0} is AM (AH)
+{INSTR_LOAD,   2, 0, 0} is UN (AH)
+{INSTR_STORE,  2, 0, 0} is UN (AH)
+{INSTR_END,    0, 0, 0}
+\end{lstlisting}
+\caption{Program Characterization for Core1}
+\label{fig:analysis:demo_chara_prog1}
+\end{subfigure}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\begin{lstlisting}
+{INSTR_STORE,  1, 0, 0} is AM (AM)
+{INSTR_STORE,  3, 0, 0} is AM (AM)
+{INSTR_LOAD,   3, 0, 0} is AH (AH)
+{INSTR_STORE,  2, 0, 0} is AM (AM)
+{INSTR_LOAD,   1, 0, 0} is AM (AH)
+{INSTR_STORE,  2, 0, 0} is UN (AH)
+{INSTR_LOAD,   3, 0, 0} is AH (AH)
+{INSTR_STORE,  1, 0, 0} is AM (AH)
+{INSTR_LOAD,   2, 0, 0} is UN (AH)
+{INSTR_STORE,  3, 0, 0} is AM (AH)
+{INSTR_END,    0, 0, 0}
+\end{lstlisting}
+\caption{Program Characterization for Core2}
+\label{fig:analysis:demo_chara_prog2}
+\end{subfigure}
+\end{center}
+\caption{Example of Program Characterizations}
+\label{fig:analysis:demo_chara_progs}
+\end{figure}
+In this very small example, the cache replacement policy does not activate,
+which means that the performing the analysis in isolation is able to provide a
+reference that will indicate which instructions are cache misses because of
+interference and which are not. Indeed, in the figures, the first indicated
+characterization on each line corresponds to that obtained in the configuration
+with the other program running in parallel. The second one, between
+parentheses, is the result of the analysis in isolation. The following results
+can be observed:
+\begin{itemize}
+\item
+   In the program on Core1, only the instruction at line 7 is
+   sure to not be negatively affected by cache coherence (\textit{always-hit}).
+\item
+   The execution time variability of the program on Core1 is caused by the
+   instructions at lines 3, 4, 9, and 10 (\textit{uncategorized}).
+\item
+   For the program on Core2, the instructions at lines 3 and 7 are never
+   negatively affected by cache coherence.
+\item
+   The execution time variability of the program on Core2 is only caused by the
+   instructions at lines 6 and 9.
+\item
+   The result of the analysis in isolation shows that the first access for each
+   memory element is always a cache miss, and all subsequent accesses are always
+   cache hits.
+\end{itemize}
+The result of the analysis in isolation are unsurprising, because those first
+accesses obtain all the permissions for the memory elements required by the
+subsequent accesses. A different result would be observed if the first access
+what a \loadinstr{} and a subsequent \storeinstr{} was present: both would be
+classified as \textit{always-miss}. Note that this particular example does not
+feature any \evictinstr{} instruction nor does it trigger the caches'
+replacement policy. As indicated, the latter would impact the results of the
+analysis in isolation. Considering the amount of interference in this example,
+the program running on Core2 is surprisingly predictable.
+\end{example}
+
+At this point, the user has a better understanding of how each instructions
+affect the program's execution time.
+Section~\ref{sec:analysis:mem_elem_accuracy} provides an auxiliary analysis,
+which focuses on the accuracy of memory elements instead.
+
+\subsection{Memory Element Accuracy Analysis}
+\label{sec:analysis:mem_elem_accuracy}
+In addition of characterizing each instruction, the overall accuracy of accesses
+made to each memory elements can also be quantified in each cache. As with the
+instructions, this analysis reveals which memory elements are the cause of time
+variation, which are not affected by interference, and which are frequent
+causes of cache misses. Furthermore, some information on \textit{uncategorized}
+instructions can sometimes be obtained by looking at the accuracy of memory
+elements.
+
+Instead of categorizing the memory elements, this analysis looks at the minimum
+and maximum of cache hits and cache misses for each memory element in each
+cache. The UPPAAL queries to determine either the maximum or minimum of cache
+hits for the memory element at address \lstinline!3! on Cache1 are as follow:
+\begin{itemize}
+\item \textbf{Maximum Number of Cache Hits:}\\
+   \lstinline!sup: Cache1.cache_local_address_infos[3].hit!
+\item \textbf{Minimum Number of Cache Hits:}\\
+   \lstinline!inf{Core1.Terminated and Core2.Terminated}: Cache1.cache_local_address_infos[3].hit!
+\end{itemize}
+The \lstinline!Core1.Terminated and Core2.Terminated! formula parameter used
+when calculating the minimum number of cache hits ensures that only values from
+after both programs have successfully completed are considered. Otherwise, the
+result would always be 0, as it is the initial and lowest value on all traces.
+
+Combined with the categorization of instructions, this analysis can provide
+information on the \textit{uncategorized} instructions accessing
+a memory element. Indeed, by removing the accesses pertaining to instructions
+classified as \textit{always-hit} or \textit{always-miss} from the results, the
+remaining numbers indicate the range of cache hits and cache misses distributed
+among all \textit{uncategorized} instructions for this memory element.
+
+\begin{example}[Application to the Model of Section~\ref{sec:analysis:demo_model}]
+\label{ex:analysis:hit_miss}
+Using UPPAAL to query the extrema of both cache hits and cache misses on each
+cache for the model of Section~\ref{sec:analysis:demo_model} yields the results
+shown in Figures~\ref{fig:analyzing:maximum_hit_miss} and
+\ref{fig:analyzing:minimum_hit_miss}. The first number in each cell corresponds
+to the result of the analysis for all accesses. The number between parenthesis
+subtracts the accesses which are not from \textit{uncategorized} instructions
+according to Example~\ref{ex:analysis:instr_chara}.
+
+\begin{figure}[hbt!]
+\begin{center}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\cline{2-5}
+\multicolumn{1}{c|}{} &
+\multicolumn{2}{c|}{Cache1} &
+\multicolumn{2}{c|}{Cache2} \\
+\multicolumn{1}{c|}{} & Hit & Miss & Hit & Miss\\
+\hline
+Address 1 & 3 (2) & 4 (2) & 0 (0) & 3 (0)\\
+\hline
+Address 2 & 2 (2) & 4 (2) & 1 (1) & 2 (1)\\
+\hline
+Address 3 & 0 (0) & 1 (0) & 2 (0) & 2 (0)\\
+\hline
+\end{tabular}
+\caption{Maximum}
+\label{fig:analyzing:maximum_hit_miss}
+\end{subfigure}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\cline{2-5}
+\multicolumn{1}{c|}{} &
+\multicolumn{2}{c|}{Cache1} &
+\multicolumn{2}{c|}{Cache2} \\
+\multicolumn{1}{c|}{} & Hit & Miss & Hit & Miss\\
+\hline
+Address 1 & 1 (0) & 2 (0) & 0 (0) & 3 (0)\\
+\hline
+Address 2 & 0 (0) & 2 (0) & 1 (1) & 2 (1)\\
+\hline
+Address 3 & 0 (0) & 1 (0) & 2 (0) & 2 (0)\\
+\hline
+\end{tabular}
+\caption{Minimum}
+\label{fig:analyzing:minimum_hit_miss}
+\end{subfigure}
+\caption{Cache Hit/Miss Extrema for each Memory Element}
+\end{center}
+\end{figure}
+
+The results of this analysis can be read as follows:
+\begin{itemize}
+\item
+   On Cache1, the address 1 has 1 \textit{always-hit} and 2
+   \textit{always-miss} instructions. Thus, the number corresponding to the
+   accesses from \textit{uncategorized} instructions are obtained by removing
+   1 from the \textit{Hit} columns and 2 from the \textit{Miss} columns.
+\item
+   For address 2, the program that uses Cache1 has 2 \textit{always-miss}
+   instructions, which are thus removed from the \textit{Miss} columns.
+\item
+   Address 3 has no \textit{uncategorized} accesses, so there is nothing
+   remaining.
+\item
+   Address 1 on Cache2 is only accessed by 3 \textit{always-miss}, which are
+   thus removed. This leaves 0 hit or miss for \textit{uncategorized} accesses,
+   as expected since there are none in  Example~\ref{ex:analysis:instr_chara}.
+\item
+   Address 2 on Cache2 only removes a single \textit{always-miss}.
+\end{itemize}
+
+From these results, the following observations can be made:
+\begin{itemize}
+\item The memory element at address 1 is the main cause of cache misses.
+\item The memory element at address 3 is the least problematic one.
+\item
+   The results of the analyses for Cache2 show the same values for both minimum
+   and maximum cache hits and misses. This adds information to the
+   categorization done in Example~\ref{ex:analysis:instr_chara}. Indeed, this
+   means that despite being neither \textit{always-hit} nor
+   \textit{always-miss}, the \textit{uncategorized} instructions of Cache2
+   never both hit (minimum and maximum of 1 hit on any execution for
+   \textit{uncategorized} instructions) nor both miss (minimum and maximum of 1
+   miss on any execution for \textit{uncategorized} instructions) on the same
+   execution.
+\item
+   On Cache1, the \textit{uncategorized} accesses to address 1 can both be miss
+   or hit on the same execution. Further analysis would be required in order to
+   determine if every execution has them both hit or both miss.
+\item
+   This also holds true from the \textit{uncategorized} accesses to address 2
+   on Cache1.
+\end{itemize}
+\end{example}
+
+This auxiliary analysis provided some additional information on which memory
+elements should be the focus of the user when attempting to mitigate the
+interference generated by cache coherence. It also provided a way to obtain a
+bit more information on \textit{uncategorized} instructions.
+
+In order to understand what causes instructions to result in cache misses when
+cache coherence is active, the next section studies the external queries
+received by caches.

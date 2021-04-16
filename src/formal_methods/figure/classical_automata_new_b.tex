@@ -1,0 +1,34 @@
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
+                    semithick]
+   \node[initial,state] (S0)              {$S_0$};
+   \node[state] (S1) [right of=S0] {$S_1$};
+   \node[state] (SE) [below of=S1] {$S_E$};
+
+   \path[every node/.style={sloped, anchor=center, yshift=1em}]
+      (S0) edge [bend left] node [above=-1em]{
+      \begin{tabular}{l}
+         $\textbf{request\_files}?$\\
+         $\textit{sent} := 0$
+      \end{tabular}
+      } (S1)
+
+      (S0) edge [bend right] node [above=-1em]{ $\textbf{err}$ } (SE)
+
+      (S1) edge [bend left] node [below=1em] {
+      \begin{tabular}{l}
+         $\textbf{done}!$\\
+         $\textit{sent} = 386$
+      \end{tabular}
+      } (S0)
+
+      (S1) edge [bend left] node [above=-1em]{ $\textbf{err}$ } (SE)
+
+      (S1) edge [loop right] node [below=1em] {
+      \begin{tabular}{l}
+         $\textbf{new\_file}!$\\
+         $\textit{sent} < 386$\\
+         $\textit{sent} := \textit{sent} + 1$
+      \end{tabular}
+      } (S1)
+   ;
+\end{tikzpicture}

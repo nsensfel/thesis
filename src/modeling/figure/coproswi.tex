@@ -1,0 +1,35 @@
+\begin{tikzpicture}[
+  font=\sffamily,
+  every matrix/.style={ampersand replacement=\&,column sep=2.5cm,row sep=1cm},
+  source/.style={draw,thick,rounded corners,fill=yellow!20,inner sep=.3cm},
+  process/.style={draw,thick,circle,fill=blue!20},
+  sink/.style={source,fill=green!20},
+  datastore/.style={draw,very thick,shape=datastore,inner sep=.3cm},
+  dots/.style={gray,scale=2},
+  to/.style={->,>=stealth',shorten >=1pt,semithick,font=\sffamily\footnotesize},
+  every node/.style={align=center}]
+
+  % Position the nodes using a matrix layout
+  \matrix{
+   \&
+    \node[datastore] (cacheprotocol) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\ Protocol B
+         \end{tabular}
+         };
+      \&
+   \\
+    \node[datastore] (architecture) {Model with Protocol A};
+      \&
+      \node[source] (benchmarking) {CoProSwi};
+      \&
+    \node[datastore] (cacheperformance) {Model with Protocol B};
+      \\
+  };
+
+  % Draw the arrows between the nodes and label them.
+  \draw[to] (architecture) to (benchmarking);
+  \draw[to] (cacheprotocol) to (benchmarking);
+
+  \draw[to] (benchmarking) to (cacheperformance);
+\end{tikzpicture}

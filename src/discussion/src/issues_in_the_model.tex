@@ -1,0 +1,42 @@
+\section{Issues with the Model}
+\todomsg{Talk about improvements that could be done, and things you'd do differently}
+
+This section presents a number of issues that were discovered in the model
+presented in Chapter~\ref{cha:modeling_cache_coherence}, but could not be
+addressed because of time constraints. Some behaviors I erroneously thought
+unnecessary were then omitted when moving to the new target architecture.
+Readers wanting to make proper use of the model are strongly encouraged to
+address them.
+
+\subsection{Limitations in the actions available to the caches}
+\label{sec:issue:limited_cache_actions}
+As explained in Sections~\ref{sec:model:cache:query} and
+\ref{sec:model:cache:data}, assumptions were made in what a cache coherence
+protocol would need to do, in order to simplify the transitions available upon
+handling of an event. These assumptions were based on the standard MSI
+protocols, but, as it turned out, were contradicted in a protocol published a
+few months prior to the start of the model's construction (see
+Section~\ref{sec:related_works:pmsi}). The assumptions on question are when can
+queries be emitted: in standard MSI cache coherence protocols, these can only
+be emitted following reception of a request, and not because of a data or query
+message. Handling of this particular protocol might only require the copy of
+the query handling transition from the \textit{S5} location of the cache
+automaton to the \textit{S3}, but reflects an actual flaw in the model: it does
+not support all cache coherence protocols that can be described using the
+notations from Chapter~\ref{cha:cache_coherence} as was originally thought. Other
+similar, but harder to correct assumptions are the maximum number of data
+messages and queries that can be sent in response to an incoming event.
+Thankfully, these limitations are of no concern when modeling architectures
+with more traditional cache coherence protocols.
+
+\subsection{Support for multiple cores per cache}
+\label{sec:discussion:cache:multi-core-per-cache}
+The model described in Section~\ref{sec:model:cache} only has partial support
+for multiple cores using the same cache. Indeed, such configurations have not
+been considered to be a target and support was more experimental. As it happens,
+the un-stalling procedure incorrectly ignores which core sent the request when
+deciding which request to un-stall for a given memory element. Indeed, as
+indicated in the description made in the section, requests coming from different
+cores should not block one another, yet the model does not correctly enforces
+this.
+

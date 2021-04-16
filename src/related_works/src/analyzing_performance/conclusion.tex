@@ -1,0 +1,19 @@
+\section{Conclusion}
+The use of timed automata to analyze the real-time properties of an architecture
+has already been done in a few publications, both for single-core and for
+multi-core processors. The two main advantages of these approaches is the
+certainty that all scenarios are taken into account, and the modularity of the
+models, which facilitates their adaptation to most architectures.
+
+However, these approaches have a tendency to suffer from combinatorial
+explosion, which limits the size of the models they can be used on. In addition,
+none of the existing literature exploits timed automata to model the effects
+of cache coherence on the system. Instead, as in the analyses of the
+previous chapter, cache coherence is assumed to be disabled.
+
+This last point is remediated in this thesis, by the proposition of a multi-core
+architecture model with a focus on cache coherence. For the model to be
+accurate however, the details of what is modeled need to be known. This
+information is obtained through benchmarks (Chapter~\ref{cha:micro-benchs})
+and a proper identification of the cache coherence protocol, which is the
+subject of the next chapter and first contribution of this thesis.

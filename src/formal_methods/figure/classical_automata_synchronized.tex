@@ -1,0 +1,47 @@
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3.5cm,
+                    semithick]
+   \node[state] (S00)        {$\langle S_0, S_0 \rangle$};
+   \node[]  (Shadow0) [above of=S00,yshift=-1.5cm]       {start};
+   \node[state] (S11) [below of=S00] {$\langle S_1, S_1 \rangle$};
+   \node[state] (S0E) [right of=S00] {$\langle S_0, S_E \rangle$};
+   \node[state] (SE0) [right of=S0E] {$\langle S_E, S_0 \rangle$};
+   \node[state] (S1E) [right of=S11] {$\langle S_1, S_E \rangle$};
+   \node[state] (SE1) [right of=S1E] {$\langle S_E, S_1 \rangle$};
+   \node[state] (SEE) [below right of=SE0,yshift=0.6445cm] {$\langle S_E, S_E \rangle$};
+
+   \path[every node/.style={sloped, anchor=center, yshift=1em}]
+      (Shadow0) edge node {} (S00)
+
+      (S00) edge [bend right] node [below=2em]{
+      \begin{tabular}{l}
+         $\langle \textbf{request\_files}!, \textbf{request\_files}? \rangle$\\
+         $\langle \textit{fetched} := 0, \textit{sent} := 0 \rangle$
+      \end{tabular}
+      } (S11)
+
+      (S11) edge [bend right] node [below=2em]{
+      \begin{tabular}{l}
+         $\langle \texttt{true}, \textit{sent} = 386 \rangle$\\
+         $\langle \textbf{done}?, \textbf{done}! \rangle$
+      \end{tabular}
+      } (S00)
+
+      (S00) edge [bend left] node [below=1.5em]{ $\langle -, \textbf{err} \rangle$ } (S0E)
+      (S00) edge [bend left] node { $\langle \textbf{err}, - \rangle$ } (SE0)
+      (S0E) edge node [below=1em] { $\langle \textbf{err}, - \rangle$ } (SEE)
+      (SE0) edge [bend left] node  { $\langle -, \textbf{err} \rangle$ } (SEE)
+
+
+      (S11) edge [bend right] node [above=-0.5em]{ $\langle -, \textbf{err} \rangle$ } (S1E)
+      (S11) edge [bend right] node [below=1em] { $\langle \textbf{err}, - \rangle$ } (SE1)
+      (S1E) edge node { $\langle \textbf{err}, - \rangle$ } (SEE)
+      (SE1) edge [bend right] node [below=1.5em]  { $\langle -, \textbf{err} \rangle$ } (SEE)
+
+      (S11) edge [loop below] node [below=0.8em,xshift=2cm]{%
+      \begin{tabular}{l}
+         $\langle \textbf{new\_file}?, \textbf{new\_file}! \rangle$\\
+         $\langle \textit{fetched} := \textit{fetched} + 1, \textit{sent} := \textit{sent} + 1\rangle$
+      \end{tabular}
+      } (S1E)
+   ;
+\end{tikzpicture}

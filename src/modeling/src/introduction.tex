@@ -1,0 +1,26 @@
+This chapter presents a UPPAAL model\footnote{Available at
+\url{https://github.com/nsensfel/phylog-cache-coherence}}
+for the analysis of the effects of cache
+coherence in multi-core processors. The goal is to create a formal model in
+order to perform automatic analyses (which are described in
+Chapter~\ref{cha:exposing_interference}), while ensuring that:
+\begin{itemize}
+\item The model is as generic as possible in how it models the coherence
+protocol, making it easy to switch protocol.
+\item The protocols are modeled in detail, taking into account all transient
+states and being defined for split-transaction buses.
+\end{itemize}
+
+The approach chosen is similar to the papers presented in
+Chapter~\ref{cha:analyzing_rel_work}: use a network of small timed
+automaton, each representing a component, so that the model of the system ends
+up easily readable, modular, and re-usable.
+
+The chapter starts by an overview of the modeling strategy
+(Section~\ref{sec:modeling:strategy}). The model is then seen through its
+communication channels in Section~\ref{sec:modeling:channels}, which provides
+an understanding of how the components interact. The sections that follow each
+provide a precise description of each component's automaton. Once all
+components have been covered, Section~\ref{sec:protocol_switching} presents a
+tool to allow the coherence protocol being used by the model to be
+automatically changed to another.

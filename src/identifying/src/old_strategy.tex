@@ -1,0 +1,334 @@
+\section{Identification Strategy}
+\label{sec:identification:strategy}
+This section presents the strategy used to ensure a complete understanding of
+the cache coherence mechanisms of an architecture. It assumes some capacity of
+observation on the platform, and that an already non-ambiguous cache coherence
+protocol has been hypothesized to be the one implemented by the architecture.
+With this, the general idea is to ensure that all observations made are
+coherent with those that this hypothetical cache coherence protocol would lead
+to.
+
+As previously indicated, the first step is to define a hypothetical cache
+coherence protocol using the notation presented in
+Chapter~\ref{cha:cache_coherence}. All further steps of the strategy perform
+micro-benchmarks in order to attempt to obtain observations contradicting this
+hypothetical cache coherence protocol. To avoid any confusion between the two
+protocols, the use of notations from Chapter~\ref{cha:cache_coherence} is solely
+for the description of the hypothetical cache coherence protocol, and new
+definitions are provided for reasoning over the observations made of the
+architecture's actual cache coherence protocol.
+
+Two types of monitors are assumed to be available: a way to see the state of
+cache and coherence manager lines (see
+Definition~\ref{def:identifying:cache_controller_state}), and performance
+monitors (see Definition~\ref{def:identifying:performance_monitor}). The state
+of caches may contain information unrelated to cache coherence (e.g.~cache
+replacement tags). The types of performance monitors available determine the
+confidence one can have in the results of this strategy. Indeed, the final
+result can only be considered to a match or a mismatch \textit{according to what
+can be observed}.
+
+As explained in Chapter~\ref{cha:cache_coherence}, cache coherence protocols are
+defined around a single memory element. Thus, the analysis only considers a
+single memory element in its process.
+
+Step~\ref{step:reachability} performs a standard reachability analysis process
+which catalogs the observable coherence states (see
+Definition~\ref{def:identifying:cache_controller_state}), as well as the valid
+system coherence states (see
+Definition~\ref{def:identifying:observable_system_state}). Furthermore, both the
+transition relation of these system coherence states (see
+Definition~\ref{def:identifying:observable_system_transitions}) and the
+observable associated behavior (see
+Definition~\ref{def:identifying:performance_monitor}) are also recorded. This
+first analysis is done with a single instruction per transition, and thus does
+not cover the entirety of the protocol, but provides an easily observed
+baseline.
+
+\begin{definition}[Observable Coherence State]
+\label{def:identifying:cache_controller_state}
+   On an real architecture, each line of a cache or coherence manager has
+   \archboolflagscount{} binary flags providing information on its state. It is
+   likely not all combinations of valuations for these flags are valid states.
+   We thus define $\validarchboolflags{} \subseteq \archboolflags{}$ the set of
+   all valid states. We can then define $\cacheboolstatefun{}: \caches{} \to
+   \memoryelements{} \to \validarchboolflags$, which indicates the valuation of
+   these binary flags for a given memory element in a given cache, and
+   $\coherencemanagerboolstatefun{}: \to \memoryelements{} \to
+   \validarchboolflags$ the coherence manager equivalent.
+\end{definition}
+
+\begin{issue}[Cataloging the Valid Observable Coherence States]
+\label{issue:catalog_observable_states}
+   \validarchboolflags{} is not originally known.
+\end{issue}
+
+\begin{issue}[Matching Observable Stable States with
+Hypothetical Stable States]
+   \label{issue:define_state_decode}
+   The relation between \validarchboolflags{} and $\cachestate{} \cup
+   \coherencemanagerstate{}$ is not originally known.  We need to identify a
+   relation $\decodefun{}: \validarchboolflags{} \times (\cachestate{} \cup
+   \coherencemanagerstate{})$, which decodes the relevant part of
+   \validarchboolflags{} and matches it to an element of $\cachestate{} \cup
+   \coherencemanagerstate{}$, which in turns allows us to reason over
+   \cachestatefun{} and \coherencemanagerstatefun{} when given
+   \cacheboolstatefun{} and \coherencemanagerboolstatefun{}. To complicate
+   matters, part of the flags in \validarchboolflags{} may be unrelated to the
+   coherency state of the memory element. Thus, \decodefun{} may not be
+   injective.
+   However, in any successful match, \decodefun{} must be
+   surjective:
+$
+   \forallin{f}{\coherencemanagerstate{} \cup \cachestate{}}{%
+      \exists r \in \validarchboolflags{}, \;
+         \langle r, f \rangle \in \decodefun{}
+%         \decodefun{}(r) = f%
+   }%
+$.
+   As a result, in a successful match, the \decodefun{} relation is a function.
+\end{issue}
+
+\begin{definition}[Observable System State]
+\label{def:identifying:observable_system_state}
+   As with \systemstate{} for the hypothetical cache coherence protocol, using a
+   shorthand for the state of the studied memory element in each component
+   greatly simplifies notations. \obssystemstate{} is thus introduced, being the
+   set of all $\langle{}CC_1, \ldots, CC_n, CM\rangle{}$ such that, there exists
+   a memory element $E$ verifying:
+   $
+      \coherencemanagerboolstatefun{}(E) = CM \land
+      \forallin{c}{0..\cachecount}{%
+         \cacheboolstatefun(c, E) = CC_c
+      }
+   $.
+\end{definition}
+
+\begin{definition}[Observable System Transitions]
+\label{def:identifying:observable_system_transitions}
+   \obsreachfun{} is the analog to \hypreachfun{} (see
+   Definition~\ref{def:hypreachfun}), but for the architecture's cache
+   coherence protocol instead of the hypothetical one. It is thus declared as
+   $\obsreachfun{}: \obssystemstate{} \to \systemaction{} \to
+   set(\obssystemstate{})$.
+\end{definition}
+
+\begin{issue}[Definition of \obsreachfun{}]
+   \label{issue:define_reachability}
+   \obsreachfun{} is not originally known.
+\end{issue}
+
+\begin{issue}[Matching Transition Graphs]
+   \label{issue:match_decode}
+   For the hypothetical protocol to match the observed one, \decodefun{} has to
+   be a simulation relation such that:
+   $
+      \forallin{s}{\obssystemstate{}}{%
+         \forallin{d}{\obssystemstate{}}{%
+            \forallin{d'}{\systemstate{}}{%
+               \forallin{i}{\systemaction{}}{%
+                  (d \in \obsreachfun{}(s, i))
+                  \land (\langle{} s, s' \rangle{} \in \decodefun{})
+                  \land (%
+                     \existsin{d'}{\systemstate{}}{%
+                        (\langle{} d, d' \rangle{} \in \decodefun{})
+                        \land (d' \in \hypreachfun{}(s', i))
+                     }
+                  )
+               }
+            }
+         }
+      }
+   $
+   Which, in the case of a valid match, can be simplified to:
+   $\decodefun{}~\circ~\obsreachfun{} = \hypreachfun{}~\circ~\decodefun{}$
+\end{issue}
+
+\begin{definition}[Performance Monitors]
+\label{def:identifying:performance_monitor}
+   The observation of the architecture's behavior is done through performance
+   monitors. A performance monitor holds a number that counts the occurrences of
+   a certain event. Each core is assumed to have its own monitors (although
+   these monitors do not have to be limited to those relating to events from
+   that code). With \archmonitor{} the set of monitors available on every core,
+   $\archmonitorval{}: \obssystemstate{} \to \systemaction{} \to \archmonitor{}
+   \to (\mathbb{R}^{+})^\cachecount{}$ indicates, for each core, the number of
+   occurrences of an event observed when performing a given transition from a
+   given initial state. The event behind each \archmonitor{} is assumed to be
+   understood by the user.
+\end{definition}
+
+\begin{definition}[Performance Monitor Oracles]
+\label{def:identifying:performance_monitor_oracle}
+   $\hyparchmonitorval{}: \systemstate{} \to \systemaction{} \to
+   \archmonitor{} \to (\mathbb{R}^{+})^\cachecount{}$ is the analogue of
+   \archmonitorval{} applied to the hypothetical cache coherence protocol.
+   \hyparchmonitorval{} thus serves as an oracle, indicating what
+   \archmonitorval{} is expected to yield for the cache coherence protocols to
+   match.
+\end{definition}
+
+\begin{issue}[Definition of \archmonitorval{}]
+   \label{issue:define_event_count}
+   \archmonitorval{} is not originally known.
+\end{issue}
+
+\begin{step}[Reachability Analysis]
+\label{step:reachability}
+   To address Issue~\ref{issue:catalog_observable_states}, and a portion of both
+   Issue~\ref{issue:define_reachability} and
+   Issue~\ref{issue:define_event_count}, a reachability analysis is performed.
+   Starting from the initial situation where all cache controllers consider the
+   memory element to be invalid ($\emph{init}$), the reachable observable system
+   states ($\obssystemstate{}$) and behaviors ($\archmonitorval{}$) are
+   cataloged by observing the effect of a single core instruction and the
+   associated transition relation $\obsreachfun{}$. The idea is to run a
+   benchmark and observe the reached state and performance monitor results.  If
+   the reached state has not been visited, it is added to the waiting list
+   (\textit{Candidates}), otherwise it is not. This is a standard reachability
+   algorithm:
+   \lstset{%
+      escapeinside={(*}{*)},%
+      keywordstyle=\bfseries,%
+      morekeywords={while,let,in,if,then,else,foreach},%
+      numbers=none%
+   }
+\begin{lstlisting}
+(*$\validarchboolflags{} \gets$*) tuple_to_set((*$\emph{init}$*))
+(*$\obssystemstate{} \gets \{\emph{init}\}$*)
+Candidates (*$ \gets \{\emph{init}\}$*)
+while (Candidates (*$\neq \emptyset$*)):
+   C(*$~\in~\!\!$*)Candidates;
+   Candidates (*$\gets$*) Candidates/C;
+   foreach k (*$\in$*) 0..(*$\cachecount{}$*)
+         foreach instr(*$~\in\{load, store, evict\}$*)
+               SysInstruction (*$\gets$*) single_instruction_on(instr, k)
+               (*$\langle{}$*)ObservedState, PerformanceCounters(*$\rangle{} \gets$*) benchmark(C, SysInstruction)
+               (*$\obsreachfun{}$*)(C, SysInstruction) (*$\gets$*) {ObservedState}
+               (*\archmonitorval{}*)(C, SysInstruction) (*$\gets$*) PerformanceCounters
+               if ObservedState (*$\not\in \obssystemstate{}$*)
+                  (*$\validarchboolflags{} \gets \validarchboolflags{} \cup \{$*)tuple_to_set(ObservedState)(*$\}$*)
+                  (*$\obssystemstate{} \gets \obssystemstate{} \cup \{$*)ObservedState(*$\}$*)
+                  Candidates (*$\gets$*) Candidates (*$\cup~\{$*)ObservedState(*$\}$*)
+\end{lstlisting}
+This process can be shortened by taking into account cache states that do not
+emit any message when a particular instruction is applied. Indeed, in these
+cases, the state of the other states is inconsequential, as they are not made
+aware of the instruction's existence.
+\end{step}
+
+The results of Step~\ref{step:reachability} are then compared with those
+expected to be observed on an architecture implementing the hypothetical
+protocol. Step~\ref{step:state_matching} starts by matching the observed
+coherence states with the stable states from the hypothetical protocol, thus
+creating \decodefun{} (see Issue~\ref{issue:define_state_decode}).
+Step~\ref{step:state_matching} is unlikely to result in the detection of a
+mismatch between the hypothetical and the platform's cache coherence protocol,
+as multiple observed coherence states can be matched to the same hypothetical
+one, in order to take non-coherence-related flags into account. Thus, unless
+some observed coherence state is matched to multiple hypothetical one, or there
+is a hypothetical coherence state with no observed coherence state assigned, the
+identification process continues.
+
+\begin{step}[State Matching]
+\label{step:state_matching}
+   We can now resolve Issues~\ref{issue:define_state_decode} and
+   \ref{issue:match_decode} by constructing \decodefun{} so that the property
+   in Issue~\ref{issue:match_decode} is verified. Not being able to do so would
+   indicate a mismatch between the protocols.
+
+   \lstset{%
+      escapeinside={(*}{*)},%
+      keywordstyle=\bfseries,%
+      morekeywords={while,let,in,if,then,else,foreach},%
+      numbers=none%
+   }
+\begin{lstlisting}
+(*$\decodefun \gets \langle init, <I, ..., I> \rangle$*)
+DecodedStates (*$\gets {init}$*)
+WaitList (*$\gets {init}$*)
+
+while (decoded_states != (*$\obssystemstate{}$*))
+   CurrentState(*$~\in~\!\!$*)WaitList
+   WaitList(*$\gets$*) WaitList/CurrentState
+   (*$\langle$*) CurrentState, CurrentDecodedState (*$\rangle \in \decodefun$*)
+   foreach k (*$\in$*) 0..(*$\cachecount{}$*)
+         foreach instr(*$~\in\{load, store, evict\}$*)
+               SysInstruction (*$\gets$*) single_instruction_on(instr, k)
+               {NextState} (*$\gets$ $\obsreachfun{}$*)(CurrentState, SysInstruction)
+               NextDecodedState (*$\gets$ $\hypreachfun{}$*)(CurrentDecodedState, SysInstruction)
+               (*$\decodefun \gets \decodefun \cup \{\langle$*) NextState, NextDecodedState (*$\rangle\}$*)
+               if (NextState (*$\not\in$*) DecodedStates):
+                  WaitList (*$\gets$*) {NextState} (*$\cup$*) WaitList
+                  DecodedStates (*$\gets$*) {NextState} (*$\cup$*) DecodedStates
+\end{lstlisting}
+\end{step}
+
+The process continues with Step~\ref{step:behavior_matching}, in which the
+matching of hypothetical and observed coherence states is challenged by the
+observed behaviors. This challenge takes two forms: if the observed coherence
+states associated to a same hypothetical coherence state do not all exhibit the
+same behavior, as seen through events relevant to cache coherence, then they
+cannot be considered equivalent in a cache coherence protocol and so, this would
+invalidate the hypothetical cache coherence protocol by pointing out that
+architecture's protocol has additional stable states; the other possibility is
+that, while they do exhibit the same behavior, that behavior does not match what
+is expected according to the hypothetical coherence protocol (see
+Definition~\ref{def:identifying:performance_monitor_oracle}).
+
+\begin{step}[Behavior Matching]
+\label{step:behavior_matching}
+   Once the observed states have been matched with their hypothetical
+   counterpart, a comparison between expected and observed behaviors can take
+   place. At this point, if the hypothetical cache coherence protocol does
+   indeed match the one used by the architecture, the partially defined
+   $\archmonitorval{}$ function verifies:
+$
+   \forallin{sys}{\obssystemstate{}}{
+      \forallin{act}{\systemaction{}}{%
+         \forallin{mon}{\archmonitor}{%
+            defined(\archmonitorval{}) \implies
+               \archmonitorval{}(sys, act, mon) =
+               \hyparchmonitorval{}(sys, act, mon)
+         }
+      }
+   }
+$.
+   For any monitor where this property does not hold, the user must either
+   find the reason behind the mismatch, or consider the hypothetical cache
+   coherence protocol as disproved.
+\end{step}
+
+By the end of Step~\ref{step:behavior_matching}, the user has a good
+understanding of the cache coherence mechanisms. By going one step further,
+special optimizations can be sought: Step~\ref{step:reachability} can be
+performed once more, but this time multiple instructions are executed
+simultaneously, to check for possible mismatches in yet unexplored transient
+state behaviors. Because the general structure of the cache coherence protocol
+has already been confirmed, the hypothetical cache coherence protocol can be
+used to generate a list of sequences of events to analyze (see
+Definition~\ref{def:stable_state_change_path}).
+
+\begin{definition}[Stable State Change Path]
+\label{def:stable_state_change_path}
+A stable state change path is a path between two stable states of the
+cache controller protocol definition table. It is formed of a stable state
+followed by a non-empty and cycle-free sequence of transient states terminated
+by a stable state, with an event (see Definition~\ref{def:event}) separating
+every state. The two stables states in a path may in fact be the same one.
+\end{definition}
+
+\begin{step}[Simultaneous Events Behavior Matching]
+\label{step:simultaneous_event_behavior_matching}
+To complete the analysis, both \archmonitorval{} and \obsreachfun{} have to
+be fulled defined. This requires observation of the behaviors of cache coherence
+when multiple events occur simultaneously. The relevant tests to perform
+correspond to stable state change paths where there is more than one
+event corresponding to either a \instructions{} or \querymessages{}, since all
+tests with a single one of these have already been performed.
+\end{step}
+
+Upon completion of Step~\ref{step:simultaneous_event_behavior_matching}, if not
+mismatch have been found, the hypothetical cache coherence protocol is confirmed
+to be a suitable description of the cache coherence protocol found on the
+architecture.

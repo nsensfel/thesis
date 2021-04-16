@@ -1,0 +1,31 @@
+\section{Conclusion}
+La documentation des architectures ne fournit pas suffisamment de
+détails sur la cohérence de cache pour répondre aux besoins de
+certification et peut même parfois induire en erreur l'applicant.
+Pour remédier à cela, nous avons proposé une approche d'identification
+du protocole de cache réellement implémenté sur l'architecture.  Une
+fois le protocole identifié, il faut analyser le système dans son
+ensemble. L'approche choisie, pour répondre partiellement à cette
+question, a consisté à modéliser le protocole de cohérence de cache
+sous forme d'un réseau d'automates temporisés, ce qui permet de
+modéliser les composants participant à la cohérence en incluant leurs
+comportements bas niveau.  Dans un souci de généricité, une approche
+modulaire a été proposée afin de facilement modifier certains
+composants et un outil prenant en entrée plusieurs protocoles permet
+d'instancier le modèle UPPAAL ad hoc.  Un fois le modèle UPPAAL
+instancié grâce à des paramètres dont les valeurs sont à obtenir au
+travers de méthodes existantes, le modèle UPPAAL peut être analysé, à
+l'aide de techniques de vérification formelle, pour mieux cerner les
+interférences liées à la cohérence de cache dans le système.  Il est
+notamment possible d'explorer toutes les traces d'exécution du modèle
+afin d'obtenir des informations sur les effets temporels des
+interférences dues à la cohérence de cache.
+
+Plusieurs limitations ont été identifiées sur l'approche et les
+premiers axes d'extension de résultats seraient de réduire celles-ci.
+Comment prendre en compte des programmes plus réalistes et non
+déterministes ? comment intégrer les modèles UPPAAL uniquement
+focalisés sur la cohérence de cache aux frameworks plus généralistes
+proposant des modèles de c\oe urs détaillées?  Comment remonter ces
+informations dans le calcul de WCET et les documentations demandées
+par la certification?

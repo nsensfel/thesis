@@ -1,0 +1,106 @@
+\section{Coherence Protocols}
+When definiting the protocols, the behavior of the caches and the coherence
+manager is given in the form of a classical automata (see
+Chapter~\ref{cha:formal_methods}), and limited to a single memory component.
+
+\input{\chapterdirectory/src/simple_msi.tex}
+\subsection{Properties to be Verified}
+\label{sec:proper_cache_coherence_protocol}
+A system maintaining cache coherence is a system in which the application of
+each read and write instruction on the same memory elements across multiple
+caches holds the same results as if these caches shared a permanent single copy
+of each of those memory elements.
+
+One possible strategy to achieve cache coherence is to enforce
+Properties~\ref{prop:system_wide_value}, \ref{prop:swmr}, and
+\ref{prop:forget_me_not}. Other approaches may also be possible, but this is
+the one considered in this thesis.
+
+\begin{property}[Caches Have the System-Wide Value]%
+\label{prop:system_wide_value}
+At any point, for each memory element, all copies of that memory element being
+held in a cache have the value that was last written to that memory element,
+regardless of which cache performed the writing.
+\end{property}
+
+\begin{property}[Single Writer or Multiple Readers]%
+\label{prop:swmr}
+At any point, for each memory element, there is either a single cache being
+able to write to that memory element while the others can neither read nor
+write to it, or there is any number of caches being able to read the memory
+element and none able to write to it.
+\end{property}
+
+\begin{property}[Forget Me Not]%
+\label{prop:forget_me_not}
+If a memory element has no copy held in cache, then the system's main memory
+has the value that was last written to that memory element.
+\end{property}
+
+Cache coherence protocols can be split into categories according to whether
+they are directory-based or snooping-based, and write-back or write-through.
+
+As this thesis only considers snooping-based protocols, the component
+descriptions provided in Section~\ref{sec:cache_coherence_components} are
+unlikely to fit a directory-based protocol. Indeed, in directory-based
+protocols, cache queries are not broadcasted to every cache but instead
+addressed to a component that, much like the coherence manager, keeps track of
+which component may need to see this query and sends a copy of that query to
+them. In snooping-based protocols, the caches and the coherence manager all
+receive every query, and do so in the same order.
+
+Write-through protocols ensure that any modification made to a memory element's
+copy in a cache is also applied to the original in the system's main memory.
+Conversely, write-back protocols delay the modification of the original until
+the cache loses the write permissions on its own copy. As it happens, the
+protocols studied during this thesis are all write-back ones.
+
+\subsection{Protocol Definition}
+Protocols are customarily defined by the behavior they require of caches (and
+the coherence manager, if it is used) for a single memory element according to
+its currently attributed state in the component and the type of incoming event.
+
+\begin{definition}[Event]
+\label{def:event}
+Events for a single memory element are defined as $\events{} = \querymessages{}
+\cup \instructions{} \cup \replymessages{}$
+%\cup \{\ownquery{}\}$, with \ownquery{} indicating a query that was sent by this cache.
+\end{definition}
+
+\begin{definition}[Protocol]
+\label{def:protocol}
+A protocol is thus defined as two functions:
+$\protocolccfun{} = \cachestate \to \events{} \to set(\actions{})$, which
+defines the behavior of cache controllers, given the state of memory element
+and an incoming event; and
+$\protocolcmgrfun{} = \coherencemanagerstate \to \events{} \to set(\actions{})$,
+the coherence manager equivalent. \actions{} corresponds to the actions
+described in each component's sub-section.
+\end{definition}
+
+\begin{definition}[System State]
+\label{def:systemstate}
+   For the definition of a cache coherence protocol, only a single memory
+   element needs to be considered. Indeed, the behavior is the same for any
+   address, and thus defining it for one is defining it for all. This can be
+   exploited to shorthand the notation of memory element states across the
+   system: Given $E$ the memory element arbitrarily chosen for the protocol's
+   definition, a system $\langle CC_1, \ldots, CC_n, CM\rangle$ denotes one in
+   which
+   $
+      \coherencemanagerstatefun{}(E) = CM \land
+      \forallin{c}{0..\cachecount}{%
+         \cachestatefun(c, E) = CC_c
+      }
+   $. The set of all possible systems states is denoted \systemstate{}.
+\end{definition}
+
+\begin{definition}[Stable System Transitions]
+   \label{def:hypreachfun}
+   To allow reasoning more simply over state changes, another shorthand notation
+   is introduced: $\hypreachfun{}: \systemstate{} \to
+   \instructions{}^\cachecount{} \to set(\systemstate{})$ which, given a system
+   state and instructions to apply on each cache, returns the set of all
+   possible next system states composed solely of stable states that can be
+   reached.
+\end{definition}

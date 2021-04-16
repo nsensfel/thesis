@@ -1,0 +1,79 @@
+\begin{tikzpicture}[node distance=0.4cm,auto,>=stealth']
+    \node[] (CU0) {$CU_0$};
+    \node[right = of CU0] (CC0) {$CC_0$};
+    \node[right = of CC0] (CU1) {$CU_1$};
+    \node[right = of CU1] (CC1) {$CC_1$};
+    \node[right = of CC1] (BUS) {\begin{tabular}{l}Inter-\\connect\end{tabular}};
+    \node[right = of BUS, text centered, text width=5em,xshift=-0.5cm] (CohMgr)
+      {Coherence Manager};
+    \node[right = of CohMgr, text centered, text width=5em,xshift=-0.5cm] (MEM)
+      {Memory Controller};
+
+
+
+    \node[below of=CU0, node distance=9cm] (CU0_ground) {};
+    \node[below of=CC0, node distance=9cm] (CC0_ground) {};
+    \node[below of=CU1, node distance=9cm] (CU1_ground) {};
+    \node[below of=CC1, node distance=9cm] (CC1_ground) {};
+    \node[below of=BUS, node distance=9cm] (BUS_ground) {};
+    \node[below of=CohMgr, node distance=9cm] (CohMgr_ground) {};
+    \node[below of=MEM, node distance=9cm] (MEM_ground) {};
+    %
+    \draw (CU0) -- (CU0_ground);
+    \draw (CC0) -- (CC0_ground);
+    \draw (CU1) -- (CU1_ground);
+    \draw (CC1) -- (CC1_ground);
+    \draw (BUS) -- (BUS_ground);
+    \draw (CohMgr) -- (CohMgr_ground);
+    \draw (MEM) -- (MEM_ground);
+
+    \draw[->]
+      ($(CU0)!0.23!(CU0_ground)$) -- node[above,scale=1,midway]
+         {\texttt{store}} ($(CC0)!0.23!(CC0_ground)$);
+
+    \draw[o-o] ($(BUS)!0.4!(BUS_ground)$) -- node[above,scale=1,midway]
+       {\texttt{GetM}} ($(CC0)!0.4!(CC0_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.46!(BUS_ground)$) -- node[above, scale=1,midway]
+       {\texttt{GetM}} ($(CohMgr)!0.46!(CohMgr_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.46!(BUS_ground)$) -- node[pos=0.83,above,scale=1]
+       {\texttt{GetM}} ($(CC0)!0.46!(CC0_ground)$);
+
+    \draw[|->, line width=1mm] ($(BUS)!0.46!(BUS_ground)$) -- node[below,scale=1]
+       {\texttt{GetM}} ($(CC1)!0.46!(CC1_ground)$);
+
+    \draw[o-o] ($(CohMgr)!0.6!(CohMgr_ground)$) -- node[scale=1,midway]
+       {\texttt{read}} ($(MEM)!0.6!(MEM_ground)$);
+
+    \draw[->] ($(MEM)!0.68!(MEM_ground)$) -- node[above,scale=1,midway]
+       {\texttt{data}} ($(BUS)!0.68!(BUS_ground)$);
+
+    \draw[<-] ($(CC0)!0.7!(CC0_ground)$) -- node[below,scale=1,midway]
+       {\texttt{data}} ($(BUS)!0.7!(BUS_ground)$);
+
+    \node[draw, fill=white, below = of CC0, yshift=0.2cm] (CC0M)
+      {\begin{tabular}{l}\texttt{I}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC1, yshift=0.2cm] (CC1I)
+      {\begin{tabular}{l}\texttt{S}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CohMgr, yshift=0.2cm] (CohMgrIorS)
+      {\texttt{I}};
+
+    \node[draw, fill=white, below = of CohMgr, yshift=-3.7cm] (CohMgrM)
+      {\texttt{M}};
+
+    \node[draw, fill=white, below = of CC0, yshift=-1.5cm] (CC0ISBDtoISD)
+      {\begin{tabular}{l}\texttt{IM\textsuperscript{BD}}\\$\langle\texttt{GetM}\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC0, yshift=-4cm] (CC0II)
+      {\begin{tabular}{l}\texttt{IM\textsuperscript{D}}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC1, yshift=-4cm] (CC1II)
+      {\begin{tabular}{l}\texttt{I}\\$\langle\rangle$\end{tabular}};
+
+    \node[draw, fill=white, below = of CC0, yshift=-6.3cm] (CC0II)
+      {\begin{tabular}{l}\texttt{M}\\$\langle\rangle$\end{tabular}};
+
+\end{tikzpicture}%

@@ -1,0 +1,117 @@
+\section{Cache Line Organization}
+Caches hold a finite amount of cache lines. Thus, at some point, the need for a
+new cache line when none are available may arise. Deciding which cache line to
+evict in order to store the new one has a very important impact on performance.
+This is typically decided by two factors: its placement policy and its
+replacement policy. These two policies interact: the placement policy determines
+which group of cache lines are considered by the replacement policy.
+
+\subsection{Replacement Policies}
+The cache eviction policy is the algorithm used to determine which line to
+evict when there is no more room. The optimal strategy would ensure that the
+line that is evicted is the one that would not be used for the longest time.
+However, being able to determine which line this is would require explicit
+management of the caches.
+
+Since it is commonly assumed that data recently accessed is likely to be
+accessed again soon (a principle known as \textit{locality of reference}), the
+most common replacement strategy is to choose the least recently used cache
+line as the one to evict. This is referred to as the \textit{LRU} policy.
+However, keeping accurate track of which line was accessed last is costly in
+both space and time, and so, in practice, a less precise approach, the
+Pseudo-LRU (or \textit{PLRU}) is implemented instead. The principle behind
+\textit{PLRU} is similar to having a binary tree, with the leaves corresponding
+to cache lines. Each node of the tree has a single bit. This bit indicates which
+of the two children to follow to find a cache line that was not recently used.
+When using any of the cache lines, all nodes in the path leading to it are set
+so that they point to a node not also in the path.
+
+Other replacement policies include \textit{FIFO}, in which the cache line that
+was the least recently \textit{allocated} is evicted, and cache line uses have
+no impact; using frequency of use instead of date, in something similar to the
+LRU policy (called \textit{LFU}, for Least-Frequently Used); and random
+replacement (\textit{RR}).
+
+These policies are applied to a set of cache lines. Exactly what lines are part
+of this set is determined by the placement policy.
+
+\begin{figure}[hbt!]
+\begin{center}
+\input{\chapterdirectory/figure/cache_replacement_lru.tex}
+\end{center}
+\caption{Example of LRU Replacement Policy}
+\label{fig:replacement:lru}
+\end{figure}
+
+Figure~\ref{fig:replacement:lru} is an example of LRU replacement
+policy in action: in a cache of four lines, the memory elements $A$, $B$, $C$,
+and $D$ were initially loaded, in that order. In the figure, the rightmost
+number in each cache line indicates its index for the LRU replacement policy.
+The figure shows what happens when a memory element $E$ is loaded, then the
+memory element $C$ is accessed. Because $A$ was the least-recently used element,
+it is the one that was evicted upon insertion of $E$. As it was just added, the
+element $E$ is considered as having been accessed, and all other indices are
+updated accordingly. The figure then shows what happens when $C$ is loaded: all
+indices strictly below $C$'s are increased by one, then the index of $C$ is set
+to $0$, marking it as the most recently used cache line.
+
+\subsection{Placement Policies}
+\begin{figure}[hbt!]
+\begin{center}
+\input{\chapterdirectory/figure/cache_placement_fully_associative.tex}
+\end{center}
+\caption{Example of Fully Associative Cache Organization}
+\label{fig:placement:fully_associative}
+\end{figure}
+
+\begin{figure}[hbt!]
+\begin{center}
+\input{\chapterdirectory/figure/cache_placement_direct_map.tex}
+\end{center}
+\caption{Example of Directly Mapped Cache Organization}
+\label{fig:placement:direct_map}
+\end{figure}
+
+\begin{figure}[hbt!]
+\begin{center}
+\input{\chapterdirectory/figure/cache_placement_set_associative.tex}
+\end{center}
+\caption{Example of Set Associative Cache Organization}
+\label{fig:placement:set_associative}
+\end{figure}
+
+Placement policies determine where a memory element can be stored within the
+cache, according to the memory element's address. There are three common
+strategies: allow it to go anywhere; allow it to go only at one location; and
+allow it to go anywhere within a group of cache lines;
+
+A cache in which memory elements can be placed anywhere is called a
+\textit{fully associative} cache. This makes the replacement policy able to
+perform at its best, since it applies to the whole cache at once. However,
+locating a cache line is costly, since it can effectively be anywhere in the
+cache. An example of fully associative cache organization is shown in
+Figure~\ref{fig:placement:fully_associative}.
+
+A cache in which each address maps to a single cache line is called a
+\textit{direct-mapped} cache. This effectively negates the need for a
+replacement policy. Access to a cache line is very fast. Depending on
+the mapping algorithm and the accesses made, this can end up being very
+efficient. However, even a very frequently accessed memory element is at risk of
+being evicted if another memory element that maps to same cache line is also
+accessed. Furthermore, this may lead to cache lines being evicted even when
+other cache lines remain unused. An example of directly mapped cache
+organization is shown in Figure~\ref{fig:placement:direct_map}.
+
+A cache in which a mix of both strategies is used is called a
+\textit{set-associative} cache. This is equivalent to having the cache be split
+into equally sized groups of cache lines, and applying the direct mapping to
+groups instead of single cache lines: each address is mapped to a group, but the
+memory element can end up anywhere within that group. The replacement policy is
+then only applied within the relevant group, which is much cheaper than a
+cache-wide implementation. Additionally, more frequently used memory elements
+sharing a set with other memory elements are less likely to get evicted. The
+issue of cache lines being evicted despite having potentially unused cache lines
+is still there, but only if these unused cache lines are not part of the group
+to which the newly allocated cache line belongs. An example of set associative
+cache organization where each set has two lines is shown in
+Figure~\ref{fig:placement:set_associative}.

@@ -1,0 +1,114 @@
+\section{Modeling the Architecture}
+In order to ensure all possible cache coherence interference is taken into
+account, this thesis relies on formal methods to explore all possible behaviors
+of the architecture. This requires the creation of a model for the architecture
+and the programs.
+
+\subsection{Summary}
+Following the solution chosen by the papers in
+Chapter~\ref{cha:analyzing_rel_work}, the model is created using UPPAAL timed
+automata. Thus, Chapter~\ref{cha:modeling_cache_coherence} presents the network
+af timed automata that model an architecture implementing cache coherence.
+
+Each of the architecture's components is represented by its own timed
+automaton, with synchronizations being used to interact with the other
+automata. This results is a model which is modular and composed of fairly small
+and readable automata. The timed automata formalism makes it very easy to model
+behaviors governed by time constraints, which is important considering that
+disruptions to execution time is effectively what is under study in this
+thesis.
+
+The model's modularity makes it easy for the applicant to tailor it to the
+chosen architecture, as components can be added and removed without having to
+understand the model in its entirety. Furthermore, some of the model's
+characteristics can be made to match the architecture through a collection of
+parameters listed in Appendix~\ref{app:model_parameters}.
+
+The most complex part of the model is the cache coherence protocol. However, the
+applicant does not have to understand how it is modeled in order to modify or
+replace it. Indeed, this thesis provides a tool that will transform the model
+to match a cache coherence protocol described in the formalism from
+Chapter~\ref{cha:cache_coherence}.
+
+\subsection{Limitations}
+\label{sec:issue:limited_cache_actions}
+The way programs are modeled in Chapter~\ref{cha:modeling_cache_coherence} is
+limited to a sequence of memory accesses with a minimal and maximal delay to be
+respected afterwards. This corresponds to the information relevant to cache
+coherence, but excludes the modeling of any realistic application. Furthermore,
+UPPAAL's handling of priorities and \texttt{urgent} transitions may prevent the
+maximal delay from being considered: while being able to fire transitions with
+higher priority will indeed prevent lower priorities ones from firing, any
+\texttt{urgent} modifier from those blocked lower priorities transitions is
+still considered to be in effect. This will thus prevent an automaton from
+spending more time in a location if it can currently leave the location using a
+high priority transition and a lower priority transition with the
+\texttt{urgent} modifier is only prevented from being fireable because of
+priorities. This is not an issue that can be easily mitigated, as priorities are
+a necessary and complex aspect of the model.
+
+Another source of limitation was from incorrect assumptions on my part of what
+cache coherence protocols could reasonably do. Indeed,
+Section~\ref{sec:related_works:pmsi} presents a cache coherence protocol which
+emits queries in reaction to incoming queries and data message. The traditional
+MSI protocols (MESI, MESIF, MOSI, MOESI, \ldots) only send emit queries because
+of core requests, and the model exploits this assumption to simplify the
+cache's automaton. As a result, the model is unable to use the protocol from
+Section~\ref{sec:related_works:pmsi} or other protocols with similarly
+unconventional features.
+
+The model described in Chapter~\ref{cha:modeling_cache_coherence} only has
+partial support for multiple cores using the same cache. Indeed, while such
+configurations can easily be made because of the model's modularity, they are
+not considered to be within the scope defined in
+Chapter~\ref{cha:second_intro}. The un-stalling procedure described in
+Section~\ref{sec:model:cache:requests} does not account for the possibility
+of requests being sent by different cores.
+
+Caches are limited to a single cache placement (fully associative) and
+replacement (LRU) policy. While the fully associative cache placement is not
+unrealistic, the LRU replacement policy is not generally used on real
+architectures, a pseudo-LRU policy being the most commonly used policy.
+
+\subsection{Future Works}
+It would be interesting to modify the model in order to ensure that any cache
+coherence protocol that can be described by the notations from
+Chapter~\ref{cha:cache_coherence} can also be modeled. This is not a minor
+modification: for example, the notations allow any number of queries to be sent
+during a transition in the protocol's cache automaton, but UPPAAL does not have
+dynamically sized lists.
+
+The papers presented in Chapter~\ref{cha:analyzing_rel_work} create the model
+for programs directly from that program's binary executable. Even with
+architectures using reduced instructions sets (\textit{RISC} such as
+\textit{ARM} processors), this requires a considerable amount of work, as the
+the behavior of each available assembly instruction must be modeled in UPPAL.
+It would, however, make the model able to be used on realistic programs.
+
+The automata for caches can still be improved. For example, all commonly used
+cache placement and replacement policies should be added as options. Likewise,
+the support for multiple cores per cache would allow more architectures to be
+modeled.
+
+A more difficult improvement, yet not less important, would
+be adding support for cache hierarchies to the model. Indeed, these are found in
+just about every architecture.
+
+In its current state, the model only features components directly related to
+cache coherence. Components such as the pipelines described in the papers from
+Chapter~\ref{cha:analyzing_rel_work} are not considered. While the programs as
+they are currently modeled would not be able to make use of the addition of
+models for the pipelines, the aforementioned improvement to an actual
+instruction set would benefit from the addition of pipelines. In effect, the
+modular nature of UPPAAL timed automata means that adapting the pipeline models
+from papers in Chapter~\ref{cha:analyzing_rel_work} to the model from
+Chapter~\ref{cha:modeling_cache_coherence} should not present a challenge in
+itself.
+
+The addition of automata for some components which are more rarely used but
+interact with cache coherence, such as DMAs, would also benefit the model.
+
+Ideally, the applicant should not have to fiddle with the UPPAAL model directly.
+Indeed, it would be much more user-friendly to provide tools of a nature similar
+to the protocol switcher that would take an architecture description as input
+in order to generate a model that matches it.

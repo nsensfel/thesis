@@ -1,0 +1,33 @@
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
+                    semithick]
+   \node[initial,state] (S0)              {$S_0$};
+   \node[state] (S1) [right of=S0] {$S_1$};
+   \node[state] (S2) [below of=S0] {$S_2$};
+   \node[state] (S3) [below of=S1] {$S_3$};
+
+   \path[every node/.style={sloped, anchor=center, yshift=1em}]
+      (S0) edge [bend left] node [above=-1em]{
+      \begin{tabular}{l}
+         $\textbf{chan0}!$\\
+      \end{tabular}
+      } (S1)
+
+      (S1) edge [bend left] node [below=1em]{
+      \begin{tabular}{l}
+         $\textbf{chan1}?$\\
+      \end{tabular}
+      } (S0)
+
+      (S0) edge [bend right] node [below=1em]{
+      \begin{tabular}{l}
+         $\textbf{chan2}!$\\
+      \end{tabular}
+      } (S2)
+
+      (S1) edge [bend left] node [above=-1em]{
+      \begin{tabular}{l}
+         $\textbf{chan3}?$\\
+      \end{tabular}
+      } (S3)
+   ;
+\end{tikzpicture}

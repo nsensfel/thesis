@@ -1,0 +1,18 @@
+\section{Conclusion}
+This chapter ensured readers have sufficient knowledge of cache coherence
+mechanisms to understand the concepts shown in this thesis. Indeed, it provided
+a formalization and examples in order to allow the readers to familiarize
+themselves with the MSI protocol.
+
+It should be noted that the MSI protocol presented here is a very basic cache
+coherence protocol, even in its split-transaction bus adaptation. Despite its
+primitive nature, the complex behaviors it allows to result from seemingly
+simple sequences of instructions make the analysis of its impact on software
+execution difficult to estimate. Especially when considering that, outside of
+the content of these sequences of instructions, all the behaviors are done
+automatically and outside of the user's control.
+
+While its predictability is an issue, the benefits of using cache coherence on
+an architecture to exchange data between concurrent software are too important
+to simply go without. The next part presents existing solutions proposed to
+tackle this problem.

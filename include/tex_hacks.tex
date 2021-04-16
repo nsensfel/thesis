@@ -1,0 +1,8 @@
+\usepackage{placeins}
+
+\newcommand{\stopallthesefloats}[0]{\FloatBarrier}
+
+% That seems to not be working right with #1 = 0, so beware...
+\def\truncdiv#1#2{((#1-(#2-1)/2)/#2)}
+\def\moduloop#1#2{(#1-\truncdiv{#1}{#2}*#2)}
+\def\modulo#1#2{\number\numexpr\moduloop{#1}{#2}\relax}

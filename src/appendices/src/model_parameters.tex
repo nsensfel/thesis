@@ -1,0 +1,98 @@
+\chapter{Model Parameters}
+\label{app:model_parameters}
+In order to tailor the model to match the user's architecture, a number of
+parameters can be modified:
+
+\begin{itemize}
+\item
+   \lstinline!LAST_ADDR!, an integer, which, in effect, corresponds to the
+   number of memory elements used by the system. The memory element $0$ is
+   reserved as a default \lstinline!NULL! value.
+\item
+   \lstinline!CORE_COUNT!, an integer corresponding to the number of caches
+   present in the system. The name comes from the limitation to a single core
+   per cache.
+\item
+   \lstinline!LINES_PER_CACHE!, an integer indicating the number of memory
+   elements that can be held in each cache.
+\item
+   \lstinline!COMPONENT_COUNT! an integer equal to the highest component ID
+   value.
+\item
+   \lstinline!USE_LOCK_FREE_CACHES! is a Boolean controling whether cores can
+   send new instructions before the previous ones have been resolved. If they
+   are allowed to, the value is set to \lstinline!true!.
+\item
+   \lstinline!REQ_BUFFER_SIZE! is an integer indicating how many pending
+   requests a cache can handle simultaneously. Because of how automated eviction
+   is handled, the minimal value is $2$.
+\item
+   \lstinline!IN_QUERY_BUFFER_SIZE! is the number of slots available in an
+   incoming query FIFO queue.
+\item
+   \lstinline!OUT_QUERY_BUFFER_SIZE! is the number of slots available in an
+   outgoing query FIFO queue.
+\item
+   \lstinline!IN_DATA_BUFFER_SIZE! is the number of slots available in an
+   incoming data FIFO queue.
+\item
+   \lstinline!OUT_DATA_BUFFER_SIZE! is the number of slots available in an
+   outgoing data FIFO queue.
+\end{itemize}
+
+Furthermore, the time required for certain operations can be set:
+\begin{itemize}
+\item
+   \lstinline!RAM_READ_TIME! is the time during which the memory controller
+   is inactive before sending the queried memory element.
+\item
+   \lstinline!RAM_WRITE_TIME! is the time during which the memory controller
+   is inactive after having updated a memory element.
+\item
+   \lstinline!QUERY_HANDLING_TIME! is the inactivity period of a cache receiving
+   a new query.
+\item
+   \lstinline!DATA_HANDLING_TIME! is the inactivity period of a cache receiving
+   a new data message.
+\item
+   \lstinline!REQUEST_HANDLING_TIME! is the inactivity period of a cache
+   receiving a new request from its core.
+\item
+   \lstinline!DATA_TRANSFER_TIME! is the delay for transfer through the bus
+   of a data message from one component to another.
+\item
+   \lstinline!QUERY_TRANSFER_TIME! is the time needed for a query to be
+   broadcasted by the bus.
+\item
+   \lstinline!CLOCK_CYCLE_TIME! is how long a core stays inactive after sending
+   an instruction.
+\end{itemize}
+
+By default, the model uses the values indicated in
+Figure~\ref{fig:analysis:demo_params}, which do not correspond to any
+architecture in particular and were arbitrarily chosen to be small and vaguely
+realistic in their proportion to one another.
+
+\begin{figure}[hbt!]
+\begin{multicols}{2}
+\begin{itemize}
+\item \lstinline!LINES_PER_CACHE = 20!
+\item \lstinline!USE_LOCK_FREE_CACHES = true!
+\item \lstinline!RAM_READ_TIME = 200!
+\item \lstinline!RAM_WRITE_TIME = 300!
+\item \lstinline!QUERY_HANDLING_TIME = 4!
+\item \lstinline!DATA_HANDLING_TIME = 5!
+\item \lstinline!REQUEST_HANDLING_TIME = 6!
+\item \lstinline!DATA_TRANSFER_TIME = 17!
+\item \lstinline!QUERY_TRANSFER_TIME = 24!
+\item \lstinline!CLOCK_CYCLE_TIME = 50!
+\item \lstinline!REQ_BUFFER_SIZE = 3!
+\item \lstinline!IN_QUERY_BUFFER_SIZE = 5!
+\item \lstinline!OUT_QUERY_BUFFER_SIZE = 5!
+\item \lstinline!IN_DATA_BUFFER_SIZE = 6!
+\item \lstinline!OUT_DATA_BUFFER_SIZE = 6!
+\end{itemize}
+\end{multicols}
+\caption{Default Model Parameters}
+\label{fig:analysis:demo_params}
+\end{figure}

@@ -1,0 +1,11 @@
+movl %1 %ecx
+movl %2, %eax
+label mem:
+   mov (%eax), %eax
+   mov (%eax), %eax
+   ...
+   ...
+   mov (%eax), %eax
+   decl %ecx
+   cmp %ecx, $0
+jne label mem

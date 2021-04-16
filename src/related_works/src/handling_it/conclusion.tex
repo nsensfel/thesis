@@ -1,0 +1,13 @@
+The approaches presented in Section~\ref{sec:rel_work:handling_it:through_restrictions}
+are improvements on the predictability of the system, but at the cost of its
+performance. Those from Section~\ref{sec:rel_work:handling_it:through_hardware} do not
+generally influence the system's performance in order to make it more
+predictable, but, by their very nature, are not compatible with the need to use
+existing, commercial off-the-shelf architectures. Lastly,
+Section~\ref{sec:rel_work:handling_it:accepting_it} presented existing strategies to
+determine when the interference inherent to the use of a multi-core processor
+does not lead to unacceptable execution times. This last section is what this
+thesis contributes to. Indeed, none of the existing approaches tackle cache
+coherence, and are instead focused the sharing of caches. The strategy chosen in
+this thesis for determining the impact of interference caused by cache coherence
+on the system's performance is the use of formal methods.

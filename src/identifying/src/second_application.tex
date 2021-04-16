@@ -1,0 +1,179 @@
+\subsection{Strategy Application for a MESIF Protocol}
+\label{sec:identification:second_application}
+Using the new hypothetical protocol, the identification process can continue.
+\benchs{} is now identified as matching the \texttt{F} state, and it thus
+renamed \benchf{}.  Likewise, the \benchx{} state is now named \benchts{}, as it
+does appear to correspond to the \texttt{S} state.
+
+Overall, the benchmark results confirm a MESIF protocol, albeit differing in
+some of the implementation choices, as explained below.
+
+\subsection{No \texttt{store} Optimization on \texttt{F}}
+The hypothetical MESIF protocol considers that performing a \texttt{store} on
+\texttt{F} does not require a \texttt{data} reply if no other query occurs
+simultaneously, since that particular cache is the one in charge of distributing
+the value. However, the performance monitors on the T4240 show that the memory
+elements are actually received again (CoreNet Reloads) and that the cache
+holding the memory elements in the \benchf{} state is not sending them to itself
+(which would lead to Snoop Pushes activities being observed). As indicated in
+Section~\ref{sec:identification:mesif}, whether this optimization is part of the
+protocol or not is unclear. This is exactly the kind of difference between
+implemented and hypothetical protocol that needs to be known by the
+architecture's user when looking for interference causes.
+
+\begin{figure}[H]
+\begin{center}
+%%%% \input{figure/mesif_bench/surprise_f.tex} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tabular}{|c|c|c|c|}
+\cline{2-3}
+\multicolumn{1}{c}{}
+& \multicolumn{2}{|c|}{\texttt{$\langle{}$store,-,-$\rangle{}$}}
+\\
+
+\hline
+ \multirow{2}{*}{\textbf{Origin}}
+ & \multicolumn{2}{c|}{\textbf{Behavior}}
+\\
+ & \textbf{Expected}
+ & \textbf{Observed}
+\\
+\hline
+
+%%%% E/I/I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle{}$\textbf{\benche{}},\benchi{},\benchi{}$\rangle{}$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2D Accesses
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      16000 L2D Accesses,\\
+      248532 CPU Cycles
+   \end{tabular}
+\\
+\hline
+
+%%%% F/I/I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle{}$\textbf{\benchf{}},\benchi{},\benchi{}$\rangle{}$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2D Accesses
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      16000 L2D Accesses,\\
+      8000 CoreNet Reloads,\\
+      252900 CPU Cycles
+   \end{tabular}
+\\
+\hline
+\end{tabular}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{center}
+\label{fig:mesif_surprise_f}
+\end{figure}
+
+\subsection{Odd Results with \texttt{evict} on \texttt{M}}
+Eviction from \benchm{} yields surprising results. Indeed, if not for the
+absence of any External Snoop Requests, these values are what one would expect
+to see when a cache in the \texttt{M} state sees another cache's \texttt{GetM}
+query. The number of L2D Accesses are not significant in this benchmark since,
+the \texttt{evict} instruction is not implemented as a single access but rather
+as a general eviction of all lines in that particular cache.
+\begin{figure}[hbt]
+\begin{center}
+%%%% \input{figure/mesif_bench/surprise_m.tex} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tabular}{|c|c|c|}
+\cline{2-3}
+\multicolumn{1}{c}{}
+& \multicolumn{2}{|c|}{\texttt{$\langle{}$evict, -, -$\rangle{}$}}
+\\
+
+\hline
+ \multirow{2}{*}{\textbf{Origin}}
+ & \multicolumn{2}{c|}{\textbf{Behavior}}
+\\
+ & \textbf{Expected}
+ & \textbf{Observed}
+\\
+\hline
+
+%%%% E/I/I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle{}$\textbf{\benche{}},\benchi{},\benchi{}$\rangle{}$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2D Accesses
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      42 L2D Accesses,\\
+      22400 CPU Cycles
+   \end{tabular}
+\\
+\hline
+
+%%%% M/I/I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle{}$\textbf{\benchm{}}, \benchi{}, \benchi{}$\rangle{}$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2D Accesses,\\
+      8000 Snoop Pushes
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      42 L2D Accesses,\\
+      8000 Snoop Hits,\\
+      8000 Snoop Pushes,\\
+      8000 MINTs,\\
+      65700 CPU Cycles
+   \end{tabular}
+\\
+\hline
+\end{tabular}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{center}
+\label{fig:mesif_surprise_m}
+\end{figure}
+
+
+\subsection{Better Coherence Manager}
+Because the state of the coherence manager was ignored during the naive
+exploration in this application of the strategy, the behaviors that cannot be
+reach through naive exploration when observable system states are considered to
+be only defined by their caches have yet to be analyzed.
+
+The guided exploration still ensures these behaviors are indeed analyzed,
+however. Indeed, this corresponds to both of the following stable state paths:
+\begin{itemize}
+\item $\texttt{I} \automatatransitiontrace{\loadinstr{}}{}
+\texttt{IS}^\texttt{BD} \automatatransitiontrace{\ownquery{}}{}
+\texttt{IEoS}^\texttt{D} \automatatransitiontrace{\exclusivedata{}}{}
+\texttt{E}$
+\item $\texttt{I} \automatatransitiontrace{\loadinstr{}}{}
+\texttt{IS}^\texttt{BD} \automatatransitiontrace{\exclusivedata{}}{}
+\texttt{IE}^\texttt{B} \automatatransitiontrace{\ownquery{}}{}
+\texttt{E}$
+\end{itemize}
+
+While the coherence manager cannot be directly observed, attempting to expose
+the issue mentioned in Example~\ref{ex:reaching_e} would reveal if it shares the
+same limitations as the one from the hypothetical protocol. As it happens, the
+benchmarks show that the \benche{} state is reached after a \loadinstr{}, even
+if all caches just performed an eviction of the memory element from either
+a \benchts{} or \benchf{} state. Thus, the architecture either features a better
+coherence manager than the one described in the hypothetical protocol, or some
+other co-ordination strategy is used to detect the possibility of reaching
+the \benche{} state.

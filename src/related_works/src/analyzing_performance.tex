@@ -1,0 +1,28 @@
+\chapter{Analyzing Performance Through Formal Methods}
+\label{cha:analyzing_rel_work}
+The most common use of formal methods in relation to cache coherence is to
+validate protocol correctness (i.e.~that a protocol verifies the properties set
+in Section~\ref{sec:proper_cache_coherence_protocol}).  Indeed, the use of model
+checking for that purpose is the source of many publications. For example,
+\cite{conchon13jfla} describes a parameterized model checker by focusing on the
+verification of a cache coherence protocol, by taking its description from yet
+another paper using model checking to verify it (\cite{Baukus2002}) and thus
+allowing a comparison between the approaches.
+
+However, proving the correctness of a cache coherence protocol is not the
+subject of this thesis. We assume the protocols to be correct, and are instead
+interested by the impact the cache coherence has on the real-time properties
+of the system. Thus, in chapter, we look at real-time systems using
+formal methods to analyze the real-time properties of an architecture. As this
+is a fairly restrictive criterion, the results include approaches meant for
+single-core processors in addition to those for the more on-topic multi-cores.
+
+\section{Single-Core Processors}
+\input{\chapterdirectory/src/analyzing_performance/metamoc.tex}
+\input{\chapterdirectory/src/analyzing_performance/wuppaal.tex}
+
+\section{Multi-Core Processors}
+\input{\chapterdirectory/src/analyzing_performance/mingsong.tex}
+\input{\chapterdirectory/src/analyzing_performance/wcet_uppaal_gustavsson.tex}
+
+\input{\chapterdirectory/src/analyzing_performance/conclusion.tex}

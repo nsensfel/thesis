@@ -1,0 +1,10 @@
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=5cm,
+                    semithick]
+   \node[state] (U)              {};
+
+   \path[every node/.style={sloped, anchor=center, yshift=1em}]
+      (U) edge [loop left] node [below,yshift=0.5em] {\textcolor{blue}{\loadinstr{}}!} (U)
+      (U) edge [loop right] node [below,yshift=-1em] {\textcolor{blue}{\storeinstr{}}!} (U)
+      (U) edge [loop below] node [below,yshift=-1em] {\textcolor{blue}{\evictinstr{}}!} (U)
+   ;
+\end{tikzpicture}

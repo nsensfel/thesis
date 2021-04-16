@@ -1,0 +1,451 @@
+\section{UPPAAL and Networks of Timed Automata}
+This section summarizes the differences brought by timed automata and networks
+of timed automata to the classical automata described previously. The features
+presented here are those found within UPPAAL, a modeling tool for networks of
+timed automata introduced in \cite{Bengtsson:1996:UTS:239587.239611}. The
+addition of time leads to states in which a new type of variables, clocks,
+evolve even when no transition is activated. To account for this,
+\textit{states} are now referred to as \textit{locations} instead. Transitions
+are all instantaneous. Readers looking for further information on timed
+automata are encouraged to check out the papers in which they were first
+described (\cite{143902} and \cite{tcs126(2)-AD}), or a more in-depth
+introductory course on the subject (\cite{bouyer-cours} and
+\cite{cours-raskin}).
+
+\subsection{System Definition}
+\begin{definition}[Clocks]
+Timed automata feature a special type of variable, called \textit{clocks},
+which model the passing of time. Transitions are instantaneous, can reset
+clocks (but not set them to a specific value), and have guards referring to the
+clock's current value. Within a location, however, time passes at the same rate
+for all clocks in the system.
+\end{definition}
+
+\begin{definition}[Syntax of Constraints and Actions]
+\label{def:formal_methods:transition_grammar2}
+Given a set of variables \automatavariables{}, and a set of clocks
+\automataclocks{}, the grammar used when writing
+constraints and actions in transitions is as follows, with \textbf{ident}
+standing for a variable in \automatavariables{}, and \textbf{clk} standing
+for a clock in \automataclocks{}:\\
+$\textbf{lop} ::= \land~|~\lor $\\
+$\textbf{cop} ::=\!\!\! ~< | \le | = | \ge | > $\\
+$\textbf{mop} ::= +~| - | * |~/$\\
+$
+\textbf{val} ::=
+   \textbf{ident}
+   ~|~ \mathbb{Z}
+$\\
+$\textbf{mexpr} ::=
+   \textbf{mexpr}~\textbf{mop}~\textbf{mexpr}
+   ~|~ \textbf{val}
+$\\
+$
+\textbf{bexpr} ::=
+   \neg \textbf{bexpr}
+   ~|~ \textbf{bexpr}~\textbf{lop}~\textbf{bexpr}
+   ~|~ \textbf{mexpr}~\textbf{cop}~\textbf{mexpr}
+   ~|~ \textbf{clk}~\textbf{cop}~\textbf{val}
+   ~|~ \textbf{clk} - \textbf{clk}~\textbf{cop}~\textbf{val}
+   ~|~ \texttt{true}
+   ~|~ \texttt{false}
+$\\
+$\textbf{iexpr} ::=
+   \textbf{iexpr} \land \textbf{iexpr}
+   ~|~ \textbf{clk}~\textbf{cop}~\textbf{val}
+   ~|~ \textbf{clk} - \textbf{clk}~\textbf{cop}~\textbf{val}
+   ~|~ \texttt{true}
+$\\
+$
+\textbf{assign} ::=
+   \textbf{assign};~\textbf{assign}
+   ~|~ \textbf{ident}~:=~\textbf{mexpr}
+   ~|~ if~(\textbf{bexpr})~\{\textbf{assign}\}
+   ~|~ \textbf{clk} := 0
+   ~|~ \texttt{nop}
+$
+\end{definition}
+
+\begin{definition}[Locations]
+Unlike in classic automata, states are referred to as \textit{locations}, since a state is now defined by a location \textit{and} a value for each clock (and a value for each integer variable in our framework).
+% This can also be used to force a location to be left
+% before a certain amount of time passes.
+% \iffalse
+% Indeed, without additional constraints
+% such as an \texttt{urgent} channel synchronization, there is no obligation for
+% activeable transitions to be taken immediately.
+%\fi
+Time related attributes can be applied to locations:
+\begin{description}
+\item[\texttt{urgent}:] This location must be left before any time passes.
+\item[\texttt{committed}:] This location must be left before any time passes,
+and only transition leaving a \texttt{committed} location are enabled.
+\item[Invariant in \textbf{iexpr}:] Locations can feature an invariant on
+clocks, which must be verified in order for the location to exist.
+\end{description}
+\end{definition}
+
+The difference between an \texttt{urgent} and a \texttt{committed} location is
+only meaningful if there are multiple automata.
+Example~\ref{ex:urgent_vs_committed_locations} uses a network of automata to
+illustrate the difference between these two attributes.
+
+\begin{definition}[Timed Automata System]
+A timed automata system \automatasystem{} is a
+$\langle \automatastates{}, \allowbreak{}
+\automatainvariants{}, \allowbreak{}
+\automatainit{}, \allowbreak{}
+\automatacondlabels{}, \allowbreak{}
+\automatachanlabels{}, \allowbreak{}
+\automatachanpriorities{}, \allowbreak{}
+\automatavariables{}, \allowbreak{}
+\automataclocks{}, \allowbreak{}
+\automataactionlabels{}, \allowbreak{}
+\automatarelations{}\rangle$ tuple, where:
+\begin{itemize}
+\item \automatastates{} is a finite set of locations.
+   $\automataurgentlocations \subseteq \automatastates{}$
+   denotes the \texttt{urgent} locations, and
+   $\automatacommittedlocations \subseteq \automatastates{}$
+   the \texttt{committed} ones.
+   $\automataurgentlocations \cap \automatacommittedlocations = \emptyset$.
+\item
+   $\automatainvariants{} : \automatastates{} \to \textbf{iexpr}$ indicates
+   the invariant of each location.
+\item \automatainit{} is the initial location ($\automatainit{} \in
+\automatastates{}$).
+\item \automatavariables{} is a finite set of variables.
+\item \automataclocks{} is a finite set of clocks.
+\item
+   $\automatachanlabels{} = \automatachanlabels{}^{\alpha} \cup
+   \automatachanlabels{}^{\texttt{sync}}$ is a finite set of labels, with
+   $\automatachanlabels{}^{\texttt{sync}}$ corresponding to labels meant for
+   synchronization and $\automatachanlabels{}^{\alpha}$ being regular labels,
+   with
+   $\automatachanlabels{}^{\texttt{sync}} \cap \automatachanlabels{}^{\alpha}
+   = \emptyset$.
+   The labels in $\automatachanlabels{}^{\texttt{sync}}$ affixed by either `?'
+   or `!', with `?' denoting a reception on a ``channel'', and `!' an emission.
+   In addition, synchronization labels can be further categorized
+   into $\automataurgentchans{} \subseteq \automatachanlabels{}^{\texttt{sync}}$
+   corresponding to the \texttt{urgent} channels, and
+   $\automatabroadcastchans{} \subseteq \automatachanlabels{}^{\texttt{sync}}$
+   corresponding to the \texttt{broadcast} ones.
+\item
+   $\automatachanpriorities{}:
+      \automatachanlabels{}^{\texttt{sync}}
+      \to set(\automatachanlabels{}^{\texttt{sync}})$
+   indicates, for any label, which labels have a strictly lower priority. It satisfies the following properties:
+   $\forallin{l_1,l_2}{\automatachanlabels{}^{\texttt{sync}}}{%
+      (l_1 \notin \automatachanpriorities{}(l_1)) \land (l_2 \in \automatachanpriorities{}(l_1))
+      \implies
+      (
+         l_1 \not\in \automatachanpriorities{}(l_2)
+         \land
+         \automatachanpriorities{}(l_2) \subset \automatachanpriorities{}(l_1)
+      )
+   }
+   $.
+\item
+   \automatacondlabels{} = \textbf{bexpr}(\automatavariables{},
+   \automataclocks{}), as defined in
+   Definition~\ref{def:formal_methods:transition_grammar2}.
+\item
+   \automataactionlabels{} = \textbf{assign}(\automatavariables{},
+   \automataclocks{}), as defined in
+   Definition~\ref{def:formal_methods:transition_grammar2}.
+\item
+   $\automatarelations{} \subseteq
+      \automatastates{}
+      \times \automatacondlabels{}
+      \times \automatachanlabels{}
+      \times \automataactionlabels{}
+      \times \automatastates{}
+   $ is the transition relation.
+\end{itemize}
+The semantics of \automatasystem{} is given via its valid transitions
+(see Definition~\ref{sec:system-definition}) and its execution traces
+(see Definition~\ref{def:formal_methods:trace2}).
+\end{definition}
+
+\begin{definition}[Clock Valuation]
+Clocks are kept separate from standard variables, including in the definition of
+the valuation. $\automataclockvals{}: \automataclocks \to \mathbb{R}^+$ is the
+function mapping each clock to its valuation. As a shorthand, the increment
+of the value of all clocks in \automataclockvals{} by $t$ units of time is
+written $(\automataclockvals{} + t)$.
+\end{definition}
+
+\begin{definition}[Transition]
+\label{sec:system-definition}Let $\automatasystem{} = \allowbreak{}
+\langle \automatastates{}, \allowbreak{}
+\automatainvariants{}, \allowbreak{}
+\automatainit{}, \allowbreak{}
+\automatacondlabels{}, \allowbreak{}
+\automatachanlabels{}, \allowbreak{}
+\automatachanpriorities{}, \allowbreak{}
+\automatavariables{}, \allowbreak{}
+\automataclocks{}, \allowbreak{}
+\automataactionlabels{}, \allowbreak{}
+\automatarelations{}\rangle$ be an automaton. Given a location $\automatastate{} \in \automatastates{}$, a valuation $\automataenvironment{}$, a clock valuation $\automataclockvals{}$, a duration $t$ and a transition $\langle \automatastate{}, c, l, a, \automatastate{}' \rangle \in \automatarelations{}$, we define the set of the reachable states (without considering priorities) $\automatareach{}(\langle \automatastate{}, \automataenvironment{}, \automataclockvals{}\rangle, \langle \automatastate{}, c, l, a, \automatastate{}' \rangle, t) \triangleq \{\langle \automatastate{}', \automataenvironment{}', \automataclockvals{}' \rangle |
+%      (o = \automatastate{})
+%      \land (d = \automatastate{}')
+      \langle \automataenvironment{}, (\automataclockvals{} + t) \rangle \models_{PL} c
+      \land
+      \automataenvironment{}' = \automataenvironment{}[a]
+      \land
+      \automataclockvals{}' = (\automataclockvals{} + t)[a]
+      \land
+      \langle \automataenvironment{}, \automataclockvals{} \rangle \models_{PL} \automatainvariants{}(\automatastate{})
+      \land
+      \langle \automataenvironment{}', \automataclockvals{}' \rangle \models_{PL} \automatainvariants{}(\automatastate{}')\}$.
+
+We now define \automatanext{}, which
+indicates all valid transitions that can be performed, and takes into account that no transition with higher priority is doable.
+
+$\automatanext{}(\langle \automatastate{}, \automataenvironment{}, \automataclockvals{}\rangle, t)
+\triangleq
+\{\langle \automatastate{}', \automataenvironment{}', \automataclockvals{}' \rangle |
+  \existsin{\langle \automatastate{}, c, l, a, \automatastate{}' \rangle \rangle}{\automatarelations}{\langle \automatastate{}', \automataenvironment{}', \automataclockvals{}' \rangle \in \automatareach{}(\langle \{ \automatastate{}, \automataenvironment{}, \automataclockvals{}\rangle, t) \land \\
+      \forallin{\langle \automatastate{b}, c_b, l_b, a_b, \automatastate{b}' \rangle}{\automatarelations{}}{\text{ if } l \in \automatachanpriorities{}(l_b) \text{ then }
+\automatareach{}(\langle \{ \automatastate{}, \automataenvironment{}, \automataclockvals{}\rangle, \langle \automatastate{b}, c_b, l_b, a_b, \automatastate{b}' \rangle, t) \text{ is empty.}}
+% \forallin{\langle \automatastate{}'', \automataenvironment{}'', \automataclockvals{}'' \rangle}{}{}
+%          (\langle \automataenvironment{}, (\automataclockvals{} + t) \rangle \models_{PL} c_b)
+%          \land
+%          \automataenvironment{}'' = \automataenvironment{}[a_b]
+%          \land
+%          \automataclockvals{}'' = (\automataclockvals{} + t)[a_b]
+%          \land
+%          \langle \automataenvironment{b}'', \automataclockvals{b}'' \rangle \models_{PL} \automatainvariants{}(\automatastate{b}')
+%          \land
+%          \langle \automataenvironment{b}'', \automataclockvals{b}'' \rangle \models_{PL} \automatainvariants{}(\automatastate{b}')
+%          \land
+%          l \in \automatachanpriorities{}(l_b) \allowbreak{}
+%       }
+   }\}
+$
+\end{definition}
+
+\begin{definition}[Path \& Trace]
+\label{def:formal_methods:trace2}
+We consider a path to be a \emph{maximal} sequence of states/transitions
+$\langle \automatastate{1}, \automataenvironment{1}, \automataclockvals{1}\rangle
+\automatatransition{}^{\!\!\!t_1} \langle \automatastate{2},
+\automataenvironment{2}, \automataclockvals{2}\rangle \automatatransition{}^{\!\!\!t_2} \cdots$ such that $
+   \forall i%
+      \langle \automatastate{i+1}, \automataenvironment{i+1}, \automataclockvals{i+1}\rangle \in \automatanext{}(\langle \automatastate{i}, \automataenvironment{i}, \automataclockvals{i}\rangle, t)
+$. The sequence is maximal in the sense that it is either infinite or of length $N$ and such that $\automatanext{}()$ is empty for any $t\in \mathbb{R}$.
+A path starting from $ \langle
+\automatainit{}, \automataenvironment{0},  \automataclockvals{0}\rangle$ (where
+\automataenvironment{0} is the initial valuation and \automataclockvals{0}
+associates each clock with 0) is called a trace.
+\end{definition}
+
+\begin{figure}[hbt!]
+   \centering
+   \begin{tabular}{cc}
+   \input{\chapterdirectory/figure/urgent_committed_example_a} &
+   \input{\chapterdirectory/figure/urgent_committed_example_b}
+   \end{tabular}\\
+   \input{\chapterdirectory/figure/urgent_committed_example_c}
+   \caption{Example of Network of Timed Automata}
+   \label{fig:timed_automata_urgent_comitted}
+\end{figure}
+
+\begin{example}[Urgent and Committed Locations]
+\label{ex:urgent_vs_committed_locations}
+Consider the network of timed automata shown in Figure~\ref{fig:timed_automata_urgent_comitted}.
+Without any attributes on locations, the following path is legal:
+$
+   \langle \langle S_0, S_4, S_8 \rangle, \{\},  \{\langle C_0, 0\rangle\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan0!}, \textbf{chan0?}, -\rangle}{}^{75}
+   \allowbreak
+   \langle \langle S_1, S_5, S_8 \rangle, \{\}, \{\langle C_0, 75\rangle\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan3?}, -, \textbf{chan3!}\rangle}{}^{39}
+   \allowbreak
+   \langle \langle S_3, S_5, S_8 \rangle, \{\}, \{\langle C_0, 114\rangle\}\rangle \allowbreak
+$
+Let us now consider $S_1$ as \texttt{urgent}. The previous
+$\langle \langle S_1, S_5, S_8 \rangle, \{\}, \{\langle C_0, 75\rangle\}\rangle \allowbreak
+\automatatransitiontrace{\langle \textbf{chan3?}, -, \textbf{chan3!}\rangle}{}^{39}$
+transition is no longer legal, as a maximum of $0$ units of time is now allowed
+to be stayed at $S_1$.
+If we instead considered $S_5$ to be \texttt{committed}, that transition would
+still not be allowed to occur after more than $0$ units of time, but in
+addition, it would also be illegal because it does not involve a transition
+from a \texttt{committed} location (neither $S_1$ nor $S_8$, the two locations
+involved in the transition, are \texttt{committed}). Performing
+$\langle \langle S_1, S_5, S_8 \rangle, \{\}, \{\langle C_0, 75\rangle\}\rangle \allowbreak
+\automatatransitiontrace{\langle -, \textbf{chan3?}, \textbf{chan3!}\rangle}{}^{0}$
+instead would be legal (although the resulting state is different).
+\end{example}
+
+\begin{definition}[Channel Attributes]
+In UPPAAL, all synchronizations have a single emitter transition, but the
+number of receivers depends on the type of channel: standard channels have
+exactly one receiver, and \texttt{broadcast} channels activate any automaton
+able to perform a reception on that channel (even allowing the emitter to
+transition alone if no receiver is available). It should be noted that available
+receivers for the channel are forced to transition.
+
+Communication channels can have attributes related to time. Indeed, the
+\texttt{urgent} attribute indicates that, if a transition featuring this channel
+is able to occur, it must do so before any time passes.
+
+In a network of automata, the \automatachanpriorities{} function is shared by
+all automata. Thus, the priority of channels is the same accross all automata.
+\end{definition}
+
+\begin{example}[Urgent and Broadcast Channels]
+\label{ex:urgent_vs_committed_locations}
+Consider the network of timed automata shown in Figure~\ref{fig:timed_automata_urgent_comitted}.
+Without any attributes on channels, the following paths are legal:
+\begin{itemize}
+\item
+$
+   \langle \langle S_0, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan0!}, \textbf{chan0?}, -\rangle}{}^{75} \allowbreak
+   \langle \langle S_1, S_5, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan3?}, -, \textbf{chan3!}\rangle}{}^{39} \allowbreak
+   \langle \langle S_3, S_5, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle -, \textbf{chan3?}, \textbf{chan3!}\rangle}{}^{42} \allowbreak
+   \langle \langle S_3, S_7, S_8 \rangle, \{\}, \{\}\rangle
+$
+\item
+$
+   \langle \langle S_0, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan2!}, -, \textbf{chan2?}\rangle}{}^{23}
+   \allowbreak
+   \langle \langle S_2, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+$
+\item
+$
+   \langle \langle S_0, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle -, \textbf{chan2!}, \textbf{chan2?}\rangle}{}^{0}
+   \allowbreak
+   \langle \langle S_0, S_6, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan2!}, -, \textbf{chan2?}\rangle}{}^{78}
+   \allowbreak
+   \langle \langle S_2, S_6, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+$
+\end{itemize}
+Let us now consider \textbf{chan0} as \texttt{urgent}.
+$
+   \langle \langle S_0, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan0!}, \textbf{chan0?}, -\rangle}{}^{75}
+   \allowbreak
+$
+is no longer a legal transition: as the synchronization on \textbf{chan0} is
+able to occur, it must do so before any time passes. The transition would be
+legal if $75$ was $0$ instead. Furthermore, the transition
+$
+   \langle \langle S_0, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan2!}, -, \textbf{chan2?}\rangle}{}^{23}
+$ is also not legal, for the same reason: despite \textbf{chan0} not being
+synchronized on, it was still an available synchronization and so no time must
+pass while the \textbf{chan0} synchronization is available. Replacing $23$ by
+$0$ makes this a legal transition. The third proposed path is still allowed
+when \textbf{chan0} is marked as urgent: on the first transition, \textbf{chan0}
+can be synchronized on, but no time passes prior to the transition occuring;
+on the second transition, \textbf{chan0} can no longer be synchronized on, and
+so its \texttt{urgent} attribute is not taken into account.
+
+Let us now consider \textbf{chan3} as a broadcast channel.
+$
+\langle \langle S_1, S_5, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan3?}, -, \textbf{chan3!}\rangle}{}^{39} \allowbreak$
+is not longer a legal transition: $S_5$ is able to synchronize on \textbf{chan3}
+as well, and thus must do so. On the other hand, a previously illegal transition
+is now possible:$
+\langle \langle S_1, S_5, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle \textbf{chan3?}, \textbf{chan3?}, \textbf{chan3!}\rangle}{}^{39} \allowbreak
+$.
+Perhaps more surprisingly, the following path is legal:
+$
+\langle \langle S_0, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle -, -, \textbf{chan3!}\rangle}{}^{3} \allowbreak
+\langle \langle S_0, S_4, S_8 \rangle, \{\}, \{\}\rangle \allowbreak
+   \automatatransitiontrace{\langle -, -, \textbf{chan3!}\rangle}{}^{89} \allowbreak
+$.
+Indeed, all automata able to synchronize (none) do so. Note that only the
+receiving label can have any number of occurrences in the transition, there is
+always a single emitting label. Thus, setting \textbf{chan2} as a broadcast
+channel instead would not cause any change in legal paths.
+\end{example}
+
+\begin{figure}[hbt!]
+   \centering
+   \begin{tabular}{cc}
+   \input{\chapterdirectory/figure/timed_automata_a} &
+   \input{\chapterdirectory/figure/timed_automata_b}
+   \end{tabular}
+   \caption{Another example of timed automata}
+   \label{fig:timed_automata}
+\end{figure}
+
+\begin{example}
+\label{ex:timed_automata}
+In an evolution from Example~\ref{ex:classical_automata},
+Figure~\ref{fig:timed_automata} shows a network of automata modeling the exact
+same scenario, but with the addition temporal behaviors. The server now
+takes between 32 and 64 time units before providing each file. Transfer times
+are thus able to be modeled. To avoid having both automata wait forever in
+their $S_0$ location, we consider the \textbf{request\_file} channel as being
+\texttt{urgent}. Similarly, the \textbf{done} channel needs to be made urgent
+for the $S_1$ locations to be left as soon as all files were transfered. Instead
+of having the \textbf{request\_file} channel be \texttt{urgent}, another
+solution would be to mark the client's $S_0$ location as \texttt{urgent}. This
+would also lead to a deadlock after all transfers have been done.
+\end{example}
+
+\iffalse
+\begin{definition}[Synchronizations]
+In regards to actions performed during a transition, the emitter's actions
+are performed prior to that of the receivers. This makes it possible for the
+emitter to store a value in a variable, and have the receiver read that new
+value within a single step, much like a message being passed.
+\end{definition}
+\fi
+
+
+\subsection{Query Logic Operators and Semantics}
+\label{sec:uppaal_queries}
+UPPAAL uses the temporal operators described in
+Section~\ref{sec:automata_query_logic}. In this case however, $\phi$ is
+a
+$
+\textbf{bexpr} ::= \allowbreak
+   \neg \textbf{bexpr} \allowbreak
+   ~|~ \textbf{bexpr}~\textbf{lop}~\textbf{bexpr} \allowbreak
+   ~|~ \textbf{mexpr}~\textbf{cop}~\textbf{mexpr} \allowbreak
+   ~|~ \textbf{clk}~\textbf{cop}~\textbf{val} \allowbreak
+   ~|~ \textbf{clk} - \textbf{clk}~\textbf{cop}~\textbf{val} \allowbreak
+   ~|~ \texttt{true} \allowbreak
+   ~|~ \texttt{false} \allowbreak
+   ~|~ \texttt{deadlock} \allowbreak
+   ~|~ \textbf{sub-automaton}.\textbf{location} \allowbreak
+$,
+with \texttt{deadlock} being true if and only if no transition is able to occur
+and time is not allowed to pass, and \textbf{sub-automaton}.\textbf{location}
+being true if and only if said sub-automaton is currently in the given
+location.
+
+In addition to these temporal operators, UPPAAL features operators that seek
+the extremum of either a clock or a variable, with the possibility of an
+invariant delimiting the system locations in which the value is considered. Given
+either a variable or a clock $t$,
+$\texttt{sup}\{\phi\}: t \triangleq$
+maximum value for $t$ across all traces, such that this value has been reached
+in a state satisfying $\phi$.\\
+The $\texttt{inf}$ operator is the equivalent for finding the minimum value.
+
+\begin{example}
+In Example~\ref{ex:timed_automata}, computation of the WCET for file fetching
+can now be achieved through model checking:
+$\texttt{sup}\{\textit{client}.S_1\}: C_0$.  This query looks for the maximum
+value reached by $C_0$ when the \textit{client} automaton is in the $S_1$
+location.
+Considering $max$ to be the returned value, a trace leading to that value could
+be obtained by using UPPAAL to query
+for $\agop{}~\neg((C_0 = max) \land client.S1)$
+\end{example}

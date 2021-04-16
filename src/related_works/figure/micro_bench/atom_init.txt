@@ -1,0 +1,12 @@
+for(cnt=0; cnt < array_size; cnt+=stride) {
+   if(cnt<array_size-stride) {
+      // Each array element contains the address of ...
+      // ... the following array element we want to access.
+      array[cnt] = (int)&array[cnt+stride];
+   }
+   else {
+      // The last accessed element in the array points ...
+      // ... to the first element of the array that we access.
+      array[cnt] = (int)array;
+   }
+}

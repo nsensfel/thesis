@@ -1,0 +1,50 @@
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,  semithick]
+\tikzstyle{instr} = [state,rectangle,  node distance = 1cm and 10cm]
+\tikzstyle{cacheline} = [state,rectangle, node distance = 0.5cm and 3cm]
+
+\node[instr] (C1L0)                    {1. \storeinstr{} 1 (AM)};
+\node[instr] (C1L1) [below = of C1L0]  {2. \storeinstr{} 2 (AM)};
+\node[instr] (C1L2) [below = of C1L1]  {3. \loadinstr{}  1 (UN)};
+\node[instr] (C1L3) [below = of C1L2]  {4. \storeinstr{} 1 (UN)};
+\node[instr] (C1L4) [below = of C1L3]  {5. \loadinstr{}  3 (AM)};
+\node[instr] (C1L5) [below = of C1L4]  {6. \storeinstr{} 2 (AM)};
+\node[instr] (C1L6) [below = of C1L5]  {7. \loadinstr{}  1 (AH)};
+\node[instr] (C1L7) [below = of C1L6]  {8. \storeinstr{} 1 (AM)};
+\node[instr] (C1L8) [below = of C1L7]  {9. \loadinstr{}  2 (UN)};
+\node[instr] (C1L9) [below = of C1L8]  {10. \storeinstr{} 2 (UN)};
+
+\node[instr] (C2L0) [right = of C1L0]  {1. \storeinstr{} 1 (AM)};
+\node[instr] (C2L1) [below = of C2L0]  {2. \storeinstr{} 3 (AM)};
+\node[instr] (C2L2) [below = of C2L1]  {3. \loadinstr{}  3 (AH)};
+\node[instr] (C2L3) [below = of C2L2]  {4. \storeinstr{} 2 (AM)};
+\node[instr] (C2L4) [below = of C2L3]  {5. \loadinstr{}  1 (AM)};
+\node[instr] (C2L5) [below = of C2L4]  {6. \storeinstr{} 2 (UN)};
+\node[instr] (C2L6) [below = of C2L5]  {7. \loadinstr{}  3 (AH)};
+\node[instr] (C2L7) [below = of C2L6]  {8. \storeinstr{} 1 (AM)};
+\node[instr] (C2L8) [below = of C2L7]  {9. \loadinstr{}  2 (UN)};
+\node[instr] (C2L9) [below = of C2L8]  {10. \storeinstr{} 3 (AM)};
+
+
+\path[dashed,every node/.style={sloped, anchor=east}]
+   (C2L0) edge [very near end] node [above]{EX} (C1L2)
+   (C2L5) edge [very near end] node [above]{EX} (C1L8)
+   (C2L8) edge [very near end] node [above]{DE} (C1L9)
+
+   (C1L0) edge [very near end] node [above]{EX} (C2L4)
+   (C1L3) edge [very near end] node [above]{EX} (C2L4)
+   (C1L5) edge [very near end] node [above]{EX} (C2L5)
+   (C1L7) edge [very near end] node [above]{EX} (C2L7)
+   (C1L5) edge [very near end] node [above]{EX} (C2L8)
+;
+
+\path[every node/.style={sloped, anchor=east}]
+   (C2L3) edge [very near end] node [above]{EX} (C1L5)
+   (C2L4) edge [very near end] node [above]{DE} (C1L7)
+
+
+
+   (C1L4) edge [very near end] node [above]{DE} (C2L9)
+;
+
+
+\end{tikzpicture}

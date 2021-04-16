@@ -1,0 +1,277 @@
+\section{\'Etat de l'art}
+\label{fr:sec:rel_works}
+% %3 pages en tout.
+% \subsection{Benches}
+Pour répondre à l'objectif RU3, il faut être capable d'identifier le protocole de cache, de quantifier son impact
+et de maîtriser les interférences associées.
+L'identification et la quantification reposent souvent dans la littérature sur l'utilisation de stressing benchmarks qui seront l'objet de la première sous-partie.
+La deuxième rappellera brièvement les solutions actuelles pour maîtrîser les interférences et la dernière se concentrera sur l'utilisation de méthodes formelles pour l'analyse
+et la maîtrise des interférences.
+\subsection{Micro-stressing benchmarks}
+\label{fr:sec:benchs}
+Afin d'identifier les caractéristiques d'une architecture, plusieurs travaux
+reposent sur l'utilisation de micro-stressing benchmarks.
+L'idée est de jouer sur des paramètres de configuration et
+mesurer avec des moniteurs de performances les effets temporels négatifs (souvent appelés surcoûts ou facteurs de ralentissement). 
+\begin{definition}[Configuration]
+\label{fr:def:configuration}
+Une configuration est définie comme la combinaison du placement des
+programmes sur chaque cœur, des valeurs de paramètres matériels, ainsi que
+l'état initial de la machine avant que les programmes ne s'exécutent.
+\end{definition}
+
+\begin{definition}[Stressing Benchmark]
+Un stressing benchmark est une suite d'instruction spécifi- quement développée pour saturer les capacités
+d'un composant particulier de l'architecture afin d'en observer ses limites.
+\end{definition}
+
+\begin{definition}[Temps d'exécution]
+Le temps d'exécution d'une suite d'instructions sur une certaine configuration
+est le temps entre l'émission de la première instruction et la complétion (vue
+par l'émetteur) de la dernière instruction.
+\end{definition}
+
+
+\begin{definition}[Surcoût / Facteur de ralentissement]
+\label{fr:def:slowdownfactor}
+Étant donné $T_A$ et $T_B$
+deux temps d'exécution de la même suite d'instruction sur deux configurations
+distinctes $A$ et $B$ tels que $T_B \ge T_A$.
+
+Le surcoût $O$ d'utilisation de
+la configuration $B$ comparée à $A$ est défini comme:
+$ O = T_B - T_A$.
+Le facteur
+de ralentissement $f$ est défini comme:
+$f = \frac{T_A}{T_B}$
+\end{definition}
+
+
+
+%% \begin{definition}[Bande passante]
+%% La bande passante est la quantité de données (bits, bytes, mots, etc\ldots) qui
+%% peut être transférée d'un composant à un autre en un temps donné.
+%% \end{definition}
+
+\cite{10.1145/2086696.2086713} présente une stratégie pour la caractérisation
+de la sensibilité aux interférences d'une ressource partagée. L'idée générale
+étant d'effectuer un stressing benchmark sur ladite ressource uniquement avec
+un programme s'exécutant en isolation, puis de comparer le
+temps d'exécution avec le même benchmark s'exécutant alors que d'autres
+programmes sont exécutés en parallèle. 
+Cette approche forme la base de l'identification de canaux cachés
+d'interférence puisqu'elle révèle de potentiels liens cachés entre les
+composants.
+Le papier montre qu'il est
+préférable de faire des micro-stressing benchmarks (par exemple des séries de lecture ou des séries d'écriture)
+pour obtenir des résultats
+précis plutôt que des suites de benchmarks standards (par exemple MiBench avec des applications complètes), y compris pour
+l'interférence liée au partage de caches.
+
+L'approche présentée dans \cite{Bin14} peut être vue comme la continuité de
+\cite{10.1145/2086696.2086713}: la corrélation identifiée entre composants
+est ensuite utilisée pour déterminer les benchmarks les plus pertinents à faire pour déterminer les effets des interférences
+sur une application précise. Pour cela, au lieu de se limiter au temps d'exécution,
+\cite{Bin14} regarde également les corrélations entre composant
+à travers des moniteurs de performance.
+Les moniteurs de performance sont des compteurs qui peuvent être configurés pour
+compter le nombre d'occurrences d'un événement donné (par exemple, l'accès à
+l'interconnect). La documentation de l'architecture fournit généralement une
+liste d'événements pour lesquels les moniteurs de performance peuvent être
+configurés. Ces moniteurs peuvent être remis à zéro, temporairement gelés
+ou configurés pour suivre un autre type d'événement pendant l'exécution des
+programmes. Cela en fait un outil d'analyse très utile.
+\cite{Bin14} propose d'utiliser cette information pour limiter au strict minimum
+les analyses à faire sur les programmes. En effet, en observant quels
+événements peuvent être causés par interférence depuis un composant connexe
+(et surtout ceux qui ne peuvent pas l'être), des benchmarks redondants
+peuvent être évités.
+
+Les moniteurs de performance ne sont pas présents sur toutes les architectures.
+\cite{palomo_et_al:LIPIcs:2020:12378} présente une étude de cas pour la
+caractérisation d'architectures malgré leur absence. Leur plateforme dispose de
+certaines fonctionnalités d'analyse qui permettent de capturer les messages
+passant sur le bus et les instructions exécutées sur chaque cœur. Par
+extraction et analyse de cette information pendant l'exécution des programmes,
+les auteurs de \cite{palomo_et_al:LIPIcs:2020:12378} parviennent
+à obtenir un compte des événements semblable à celui de moniteurs de
+performance.
+La stratégie d'identification du protocole de cache proposée dans cette thèse
+repose sur l'utilisation de moniteurs de performance. 
+
+Les travaux présentés jusque là regardent les caches d'assez loin.
+\cite{Nowotsch2012LeveragingMC} s'intéresse également
+aux problèmes d'interférence dans les multi-cœurs dans l'avionique.
+Plus précisément, ce papier propose une
+analyse de l'architecture à travers des benchmarks pour s'assurer que des
+tâches exécutées en parallèle peuvent correctement être temporellement
+partitionnées. 
+Les analyses de \cite{Nowotsch2012LeveragingMC} s'intéressent aux surcoûts
+induits par la cohérence de cache. L'approche choisie étant de comparer le temps
+d'exécution d'instructions \loadinstr{} et \storeinstr{} selon
+trois configurations: sans
+cohérence de cache, avec cohérence de cache mais sans variables partagées, avec
+cohérence de cache et variables partagées. Pour chacune de ses configurations,
+les résultats sont ceux du temps d'exécution d'un cœur pour la lecture ou
+l'écriture pendant qu'un autre cœur effectue des lectures ou des écritures.
+Ces analyses permettent en partie
+de mesurer la performance de la cohérence de
+cache mais sans tenir compte des états de cohérence
+pour les éléments accédés,
+ce qui rend les résultats incomplets.
+
+\cite{10.1109/PACT.2009.22} tient compte des états de cohérence de cache et 
+présente ainsi des travaux d'analyse de performance de la cohérence de cache
+qui permettraient un paramétrage précis du modèle UPPAAL.
+La bande passante est
+aussi mesurée, complétant la caractérisation de la performance de la cohérence
+de cache pour l'architecture étudiée. Les auteurs de ce papier affirment
+cependant que le protocole MESIF utilisé par leur architecture peut être
+considéré comme un simple protocole MESI étant donné qu'il n'agit qu'entre deux
+caches. Il s'avère que la différence entre les deux protocoles devrait avoir un
+effet, et les résultats de benchmark qui devraient le montrer (opérations
+d'écriture) ne sont pas présents dans le papier.
+
+\subsection{Gestion des interférences}
+\label{fr:sec:handling_it}
+Cette section présente les solutions existantes pour faire face aux
+interférences générées par la cohérence de cache dans les systèmes critiques.
+Trois types d'approches sont considérées: imposer des restrictions sur le
+système, modifier le matériel ou prouver que les effets de l'interférence sont
+acceptables.
+
+\noindent\textbf{Approche par restriction.}
+L'approche la plus simple est de désactiver les caches entièrement. Cela rend le
+système beaucoup plus prévisible mais au prix d'un très fort impact négatif sur le
+temps d'exécution, au point de rendre parfois une exécution mono-cœur préférable. Une
+légère amélioration consiste à verrouiller le contenu des caches, ce qui limite
+fortement leur utilité mais n'entraine pas de diminution de la prédictibilité
+du système.
+Dans \cite{10.1145/1629335.1629369}, les lignes caches sont tout simplement
+partitionnés par cœur, ce qui évite théoriquement que les accès d'un cœur
+modifient l'espace utilisé par un autre. Le papier propose deux algorithmes pour
+prouver la possibilité d'ordonnancer des taches temps réel avec ces restrictions
+mises en place.
+
+\cite{DBLP:journals/corr/abs-1903-09310} effectue un partitionnement moins
+strict des lignes de cache à cache cœur. En effet, l'idée proposée dans ce
+papier est d'exploiter la politique de placement en s'assurant que toutes les
+lignes de cache utilisées par un cœur soient dans le même ensemble vis-à-vis de
+la politique de remplacement (principe proche du \textit{cache coloring}). En
+conséquent, l'éviction automatique n'affecte
+pas les autres cœurs utilisant le même cache. Grâce à une
+stratégie d'ordonnancement minutieuse, le nombre de programmes partageant ces
+même lignes de caches est gardé à un minimum.
+
+\cite{jean:tel-01341758} propose d'utiliser les processeurs multi-cœurs pour
+faire tourner en parallèle des applications qui étaient jusqu'alors prévues pour
+des mono-cœurs. L'utilisation des caches est simplifiée, puisque les données ne
+sont pas partagées entre les programmes. L'hyperviseur
+proposé assure un partitionnement robuste entre les différentes applications
+et fait usage d'un TDMA pour contrôler les accès aux ressources partagées, ce
+qui rend le système plus facile à prédire.
+
+Les travaux de \cite{10.1007/978-3-642-28293-5_9} utilisent une stratégie
+d'ordonnancement minutieuse afin de rendre le calcul du temps d'exécution des
+applications sur un multi-cœur plus facile. L'approche consiste
+à transformer
+automatiquement les programmes de manière à avoir des blocs de calculs et des
+blocs de transferts, puis de les ordonner de façon à ce que lorsqu'un cœur est
+dans un bloc de calcul, les autres cœurs ne peuvent pas faire d'accès aux
+données qu'il utilise. Ainsi, les calculs ne peuvent pas être perturbés par les
+actions des autres cœurs.
+
+\noindent\textbf{Approche par modifications matérielles}
+\cite{conf/rtas/HassanKP17} met en avant les sources de manque de prédictibilité
+dans le protocole MSI et propose une solution pour chacune d'entre elles. Ces
+solutions demandent à ce que certains composants matériels liés aux mécanismes
+de cohérence de cache soient rendus particulièrement prévisibles. Un protocole
+de cohérence de cache, PMSI (\textit{Predictable MSI}) est alors
+proposé avec des formules pour déduire les
+pires temps de résolution d'instruction.
+
+\cite{doi:10.1002/cpe.3172} introduit la notion de cohérence de caches sur
+demande (ODC\textsuperscript{2}, \textit{On-Demand Coherent Cache}). L'idée
+étant de délimiter les sections des programmes pendant lesquelles ils peuvent
+accéder aux données partagées.
+Ces données sont marquées comme partagées dans le cache, ce qui
+nécessite une modification matérielle. L'analyse des sections durant lesquelles
+aucune donnée partagée n'est accédée est donc rendue beaucoup plus simple.
+L'ajout de cette stratégie au framework OTAWA est présenté dans \cite{Py2015.1}
+et montre que le WCET obtenu avec cette approche est effectivement une
+amélioration comparée à une approche sans cache ou une dans laquelle tout point
+de synchronisation entraîne l'invalidation complète des cache.
+
+\noindent\textbf{Approche par acceptation}
+L'approche la plus commune des caches
+repose sur l'analyse statique et l'interprétation abstraite en continuation des
+travaux de \cite{10.1023/A:1008186323068}. Ainsi,
+chaque accès mémoire est catégorisé en fonction de s'il
+est assuré de trouver la donnée
+ dans le cache (hit),
+ ne pas l'y trouver (miss),
+ ou si l'analyse ne peut pas le
+déterminer (unknown). Cette méthode d'analyse n'est pas celle retenue ici pour la
+cohérence de caches, puisque cette simplification n'est pas compatible avec la
+gestion des états de cohérence. 
+
+La plupart des papiers sur le sujet s'intéressent exclusivement aux caches
+d'instructions, or les caches contenant des data avec de la cohérence sont ceux qui nous intéressent.
+A titre d'exemple sur les caches instruction,
+\cite{10.1109/RTSS.2009.34} propose une stratégie d'analyse WCET
+en catégorisant les accès à chaque niveau:
+est-ce qu'un certain accès atteindra ce niveau à
+coup sûr? Jamais? Pas la première fois, mais toujours après? On n'arrive pas à
+déduire? Cette catégorisation est alors utilisée pour déterminer quelles
+interférences potentielles sont dignes d'êtres analysées. Une approche
+qualifiée de \textit{bypassing scheme} (plan de contournement) est aussi
+présentée, dans laquelle les données accédées une seule fois sont identifiées
+afin d'exploiter un mécanisme de contournement pour que cet accès n'utilise pas
+inutilement de l'espace en cache.
+
+\cite{lesage:inria-00531214} utilise une approche similaire à
+celle ci-dessus mais pour les caches de données.
+La principale
+différence avec  \cite{10.1109/RTSS.2009.34} étant la manière de caractériser les accès:
+les données peuvent avoir des adresses alias qui rendent la détection des
+blocs à accès unique plus difficile.
+Cependant la cohérence de cache n'est cependant pas considérée
+et tous les accès aux données partagés sont supposés ne pas utiliser de caches privés (et il n'y a donc pas besoin de cohérence entre ces caches) et les caches partagés sont considérés comme \textit{write-through} (les modifications sont répercutées sur tous les niveaux de caches jusqu'à la mémoire principale). 
+
+\subsection{Approches formelles}
+\label{fr:sec:rel_formal}
+L'approche choisie dans cette thèse repose sur la modélisation en automates temporisés et la vérification formelle.
+L'utilisation d'UPPAAL à des fins similaires a déjà
+fait l'objet de travaux, cependant aucun ne traite de la cohérence de cache.
+
+Le premier outil à utiliser UPPAAL pour le calcul du WCET
+est METAMOC \cite{dalsgaard_et_al:OASIcs:2010:2831}
+(\textit{Modular Execution Time Analysis using Model Checking}). L'approche
+modulaire s'applique sur du mono-c\oe ur:
+le pipeline, la mémoire principale et les paramètres du cache sont isolés afin
+de faciliter leur remplacement en cas d'analyse d'un autre processeur. Les
+programmes sont analysés directement depuis leur binaire exécutable avec
+cependant des notations à ajouter pour la gestion des limites de boucles.
+\cite{wuppaal} présente WUPPAAL, une autre approche utilisant UPPAAL pour le
+calcul du WCET d'un programme exécuté sur processeur mono-cœur. La principale
+particularité de cette solution est qu'elle combine la simulation d'exécution
+et la vérification de modèles. En effet, WUPPAAL fait en sorte qu'UPPAAL
+interagisse avec 
+\textit{qemu} (un outil de simulation d'architecture)
+à travers \textit{gdb} (un outil de débogage) et
+\textit{libgdbuppaal} (une libraire maison). L'intérêt étant de réduire la
+consommation mémoire de la vérification de modèles et de supporter différentes
+architectures (et donc ensembles d'instructions binaires) très facilement.
+L'approche proposée par \cite{5702243} combine l'interprétation abstraite et la
+vérification de modèles pour le calcul de WCET sur multi-cœurs, avec une
+attention particulière à l'interconnect. L'interprétation abstraite est
+utilisée pour l'analyse des caches (en tagguant les caches hit et miss).
+Ici encore, la cohérence de caches n'est pas prise en compte. 
+
+Le modèle présenté dans \cite{conf/wcet/GustavssonELP10} correspond le plus
+à ce qui est fait dans cette thèse: UPPAAL est
+utilisé pour le calcul de WCET sur un processeur multi-cœurs avec une
+représentation détaillée de chaque composant. La cohérence de caches n'est pas
+prise en compte. En revanche, la hiérarchie de cache et les caches partagés par
+plusieurs cœurs, ainsi que les pipelines, sont présents. 
+

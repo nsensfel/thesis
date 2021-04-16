@@ -1,0 +1,9 @@
+\IfFileExists{todonotes.sty}{\usepackage{todonotes}}{}
+
+\newcommand{\todomsg}[1]{%
+   \IfFileExists{todonotes.sty}{%
+      \todo[inline]{TODO: #1}%
+   }{%
+      \textcolor{red}{TODO: #1}%
+   }
+}

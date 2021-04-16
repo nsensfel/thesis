@@ -1,0 +1,9 @@
+all threads: access data (-> E/M)
+all threads: flush caches (optional)
+all threads: barrier synchronization
+thread 0: define start_time in future
+all threads: wait for start_time
+all threads: measure t_begin
+all threads: access data (read/write)
+all threads: measure t_end
+duration = max(t_end) - min(t_begin)

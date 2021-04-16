@@ -1,0 +1,69 @@
+\begin{tabular}{|c|c|c|}
+\cline{2-3}
+\multicolumn{1}{c}{}
+& \multicolumn{2}{|c|}{$\langle$\texttt{-, -, load}$\rangle$}
+\\
+
+\hline
+   \multirow{2}{*}{\textbf{Origine}}
+ & \multicolumn{2}{c|}{\textbf{Comportement}}
+\\
+ & \textbf{Attendu}
+ & \textbf{Observé}
+\\
+\hline
+
+%%%% I/\benchi{}/\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\textbf{\benchi{}},\benchi{},\benchi{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 External Snoop Requests
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      8000 External Snoop Requests
+   \end{tabular}
+\\
+\hline
+
+%%%% F/\benchi{}/\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\textbf{\benchs{}},\benchi{},\benchi{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      8000 External Snoop Requests\\
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      \colorbox{pink}{\textbf{8000 L2 Snoop Pushes}},\\
+      8000 External Snoop Requests,\\
+      \colorbox{pink}{\textbf{8000 SINTs}}
+   \end{tabular}
+\\
+\hline
+
+%%%% S/\benchi{}/I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\textbf{\benchx{}},\benchi{},\benchi{}$\rangle$}
+
+% Behavior (Expected, Observed)
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      8000 External Snoop Requests
+   \end{tabular}
+&
+   \begin{tabular}{@{}l@{}}
+      8000 L2 Snoop Hits,\\
+      8000 External Snoop Requests
+   \end{tabular}
+\\
+\hline
+\end{tabular}

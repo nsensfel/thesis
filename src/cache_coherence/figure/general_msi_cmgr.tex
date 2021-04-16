@@ -1,0 +1,13 @@
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=5cm,
+                    semithick]
+   \node[state] (U)              {\texttt{I}};
+   \node[state] (M) [left of=U] {\texttt{M}};
+
+   \path[every node/.style={sloped, anchor=center, yshift=1em}]
+      (U) edge [bend left] node {\textcolor{red}{\textcolor{red}{\getmquery{}}}?\textcolor{OliveGreen}{\simpledata{}}!} (M)
+      (U) edge [loop below] node [below,yshift=-1em] {\textcolor{red}{\textcolor{red}{\getsquery{}}}?\textcolor{OliveGreen}{\simpledata{}}!} (U)
+
+      (M) edge [bend left] node {\textcolor{red}{\putmquery{}}?\textcolor{OliveGreen}{\simpledata{}}?} (U)
+      (M) edge [bend left=90] node {\textcolor{red}{\textcolor{red}{\getsquery{}}}?\textcolor{OliveGreen}{\simpledata{}}?} (U)
+   ;
+\end{tikzpicture}

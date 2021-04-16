@@ -1,0 +1,57 @@
+\begin{tikzpicture}[
+  font=\sffamily,
+  every matrix/.style={ampersand replacement=\&,column sep=2.5cm,row sep=1cm},
+  source/.style={draw,thick,rounded corners,fill=yellow!20,inner sep=.3cm},
+  process/.style={draw,thick,circle,fill=blue!20},
+  sink/.style={source,fill=green!20},
+  datastore/.style={draw,very thick,shape=datastore,inner sep=.3cm},
+  dots/.style={gray,scale=2},
+  to/.style={->,>=stealth',shorten >=1pt,semithick,font=\sffamily\footnotesize},
+  every node/.style={align=center}]
+
+  % Position the nodes using a matrix layout
+  \matrix{
+   \node[datastore] (application) {Application};
+   \&
+    \node[datastore] (cacheprotocol) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\ Protocol
+         \end{tabular}
+         };
+      \&
+   \\
+      \&
+      \node[sink] (uppaal) {
+         \begin{tabular}{@{}c@{}}
+            UPPAAL Analysis\\
+            (Sections~\ref{fr:sec:model} et
+            \ref{fr:sec:analyze})
+         \end{tabular}
+         };
+      \&
+      \node[datastore] (coherenceeffect) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\
+            Impact
+         \end{tabular}
+      };
+      \\
+    \node[datastore] (architecture) {Architecture};
+    \& \node[datastore] (cacheperformance) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\
+            Performance
+         \end{tabular}
+      };
+   \\
+  };
+
+  % Draw the arrows between the nodes and label them.
+
+  \draw[to] (architecture) to (uppaal);
+  \draw[to] (cacheperformance) to (uppaal);
+  \draw[to] (cacheprotocol) to (uppaal);
+  \draw[to] (application) to (uppaal);
+
+  \draw[to] (uppaal) to (coherenceeffect);
+\end{tikzpicture}

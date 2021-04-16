@@ -1,0 +1,27 @@
+\section{Conclusion}
+This chapter presented an approach to the identification of the cache coherence
+mechanisms implemented by an architecture. Such a step is necessary to expose
+and resolve any ambiguities the user may have on those mechanisms. It does not
+perform an exhaustive profiling of speed and bandwidth offered by the cache
+coherence, but instead ensures that the user has a complete list of the
+mechanisms for which to perform this profiling.
+
+The application of this approach on the NXP QorIQ T4240 fully vindicated the
+need for this additional step in the profiling of an architecture. Indeed, the
+results showed that the difference between what I believed the architecture to
+implement and what it actually does are far beyond the level of negligible
+detail: an additional coherence state was found. Without realizing that this
+state exists, the speed and bandwidth analysis may have obtained false results
+by attributing performance measurements to the wrong state and thus incorrectly
+profiling the architecture without realizing it.
+
+There were in fact multiple contributions in this chapter: the approach itself,
+which is the main contribution; the NXP QorIQ T4240 example, which serves as a
+warning not to overlook the necessity of such a step; and the formalization of
+two protocols, which are minor contributions in themselves.
+
+Having reached the end of this chapter, the issue of detecting sources of
+interference in the cache coherence mechanisms is resolved. Being able to
+determine the effects of this interference on a running program will require
+tools. The approach chosen in this thesis is to rely on models. The next chapter
+thus introduces how a model of the system is created.

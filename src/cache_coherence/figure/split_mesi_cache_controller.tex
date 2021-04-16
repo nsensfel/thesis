@@ -1,0 +1,658 @@
+\begin{tabular}{|l||c|c|c||c||c|c||c|c|c|}
+ \hline
+ \multicolumn{10}{|c|}{\textbf{Cache Controller}}\\
+
+ \hline
+
+ \multirow{2}{*}{\textbf{State}}
+ & \multicolumn{3}{c||}{\textbf{Core Request}}
+ & \begin{tabular}{@{}c@{}}
+      \textbf{Own}\\
+      \textbf{Query}
+   \end{tabular}
+ & \multicolumn{2}{c||}{\textbf{Data Reply}}
+ & \multicolumn{3}{c|}{\textbf{Received Queries}}
+ \\
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ & \loadinstr{} & \storeinstr{} & \evictinstr{}
+ &
+ & \simpledata{} & \exclusivedata{}
+ & \getsquery{} & \getmquery{} & \putmquery{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{I}
+
+ % Load/Store/Evict
+ & \sendqueryact{\getsquery{}}, \setstateact{\texttt{IS\textsuperscript{BD}}}
+ & \sendqueryact{\getmquery{}}, \setstateact{\texttt{IM\textsuperscript{BD}}}
+ & \hitact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \noaction{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IS\textsuperscript{BD}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{IEoS\textsuperscript{D}}}
+
+ % Data Reply
+ & \setstateact{\texttt{IS\textsuperscript{B}}}
+ & \setstateact{\texttt{IE\textsuperscript{B}}}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \noaction{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IS\textsuperscript{B}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{S}}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IS\textsuperscript{D}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \begin{tabular}{@{}c@{}}
+      \resetreplytoact{},\\
+      \setstateact{\texttt{S}}
+   \end{tabular}
+
+ & \begin{tabular}{@{}c@{}}
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \senddataact{\memorytarget{}}{\texttt{no-data}},\\
+      \resetreplytoact{}, \setstateact{\texttt{S}}
+   \end{tabular}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \setstateact{\texttt{IS\textsuperscript{D}I}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IEoS\textsuperscript{D}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \setstateact{\texttt{S}}
+ & \setstateact{\texttt{E}}
+
+ % GetS/GetM/PutM
+ & \storereplytoact{},
+   \setstateact{\texttt{IS\textsuperscript{D}}}
+ &
+   \storereplytoact{},
+   \setstateact{\texttt{IS\textsuperscript{D}I}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IS\textsuperscript{D}I}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ &
+   \begin{tabular}{@{}c@{}}
+      load hit,\\
+      \resetreplytoact{},\\
+      \setstateact{\texttt{I}}
+   \end{tabular}
+ &
+   \begin{tabular}{@{}c@{}}
+      load hit,\\
+      \resetreplytoact{},\\
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \senddataact{\memorytarget{}}{\texttt{no-data}},\\
+      \setstateact{\texttt{I}}
+   \end{tabular}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IM\textsuperscript{BD}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{IM\textsuperscript{D}}}
+
+ % Data Reply
+ & \setstateact{\texttt{IM\textsuperscript{B}}}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \noaction{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IM\textsuperscript{B}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{M}}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \noaction{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IM\textsuperscript{D}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \setstateact{\texttt{M}}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \storereplytoact{}, \setstateact{\texttt{IM\textsuperscript{D}S}}
+ & \storereplytoact{}, \setstateact{\texttt{IM\textsuperscript{D}I}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IM\textsuperscript{D}I}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ &
+   \begin{tabular}{@{}c@{}}
+      store hit,\\
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \resetreplytoact{}, \setstateact{\texttt{I}}
+   \end{tabular}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IM\textsuperscript{D}S}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ &
+   \begin{tabular}{@{}c@{}}
+      store hit,\\
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \senddataact{\memorytarget{}}{\simpledata{}},\\
+      \resetreplytoact{}, \setstateact{\texttt{S}}
+   \end{tabular}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \setstateact{\texttt{IM\textsuperscript{D}SI}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IM\textsuperscript{D}SI}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \begin{tabular}{@{}c@{}}
+      store hit,\\
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \senddataact{\memorytarget{}}{\simpledata{}},\\
+      \resetreplytoact{}, \setstateact{\texttt{I}}
+   \end{tabular}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{S}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \sendqueryact{\getmquery{}}, \setstateact{\texttt{SM\textsuperscript{BD}}}
+ & \hitact{}, \setstateact{\texttt{I}}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \setstateact{\texttt{I}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{SM\textsuperscript{BD}}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{SM\textsuperscript{D}}}
+
+ % Data Reply
+ & \setstateact{\texttt{SM\textsuperscript{B}}}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \setstateact{\texttt{IM\textsuperscript{BD}}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{SM\textsuperscript{B}}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{M}}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \setstateact{\texttt{IM\textsuperscript{B}}}
+ & \disablecell{}
+ \\
+ \hline
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{SM\textsuperscript{D}}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & store hit, \setstateact{\texttt{M}}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \storereplytoact{}, \setstateact{\texttt{SM\textsuperscript{D}S}}
+ & \storereplytoact{}, \setstateact{\texttt{SM\textsuperscript{D}I}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{SM\textsuperscript{D}I}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \begin{tabular}{@{}c@{}}
+      store hit,\\
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \resetreplytoact{}, \setstateact{\texttt{I}}
+   \end{tabular}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{SM\textsuperscript{D}S}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \begin{tabular}{@{}c@{}}
+      store hit,\\
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \senddataact{\memorytarget{}}{\simpledata{}},\\
+      \resetreplytoact{}, \setstateact{\texttt{S}}
+   \end{tabular}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \setstateact{\texttt{SM\textsuperscript{D}SI}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{SM\textsuperscript{D}SI}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \begin{tabular}{@{}c@{}}
+      store hit,\\
+      \senddataact{\replytotarget{}}{\simpledata{}},\\
+      \senddataact{\memorytarget{}}{\simpledata{}},\\
+      \resetreplytoact{}, \setstateact{\texttt{I}}
+   \end{tabular}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{M}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \hitact{}
+ & \sendqueryact{\putmquery{}}, \setstateact{\texttt{MI\textsuperscript{B}}}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ &
+   \begin{tabular}{@{}c@{}}
+      \senddataact{\memorytarget{}}{\simpledata{}},\\
+      \senddataact{\sendertarget{}}{\simpledata{}}, \setstateact{\texttt{S}}
+   \end{tabular}
+ & \senddataact{\sendertarget{}}{\simpledata{}}, \setstateact{\texttt{I}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{MI\textsuperscript{B}}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \hitact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \senddataact{\memorytarget{}}{\simpledata{}}, \setstateact{\texttt{I}}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ &
+   \begin{tabular}{@{}c@{}}
+      \senddataact{\memorytarget{}}{\simpledata{}},\\
+      \senddataact{\sendertarget{}}{\simpledata{}},
+      \setstateact{\texttt{II\textsuperscript{B}}}
+   \end{tabular}
+ & \senddataact{\sendertarget{}}{\simpledata{}},
+   \setstateact{\texttt{II\textsuperscript{B}}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{II\textsuperscript{B}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{I}}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \noaction{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{E}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \hitact{}, \setstateact{\texttt{M}}
+ &
+   \begin{tabular}{@{}c@{}}
+      \sendqueryact{\putmquery{}}\\
+      \setstateact{\texttt{EI\textsuperscript{B}}}
+   \end{tabular}
+
+ % Seeing Own Query
+ & \disablecell{}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ &
+   \begin{tabular}{@{}c@{}}
+      \senddataact{\memorytarget{}}{\texttt{no-data}},\\
+      \senddataact{\sendertarget{}}{\simpledata{}}, \setstateact{\texttt{S}}
+   \end{tabular}
+ & \senddataact{\sendertarget{}}{\simpledata{}}, \setstateact{\texttt{I}}
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{IE\textsuperscript{B}}
+
+ % Load/Store/Evict
+ & \stallact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \setstateact{\texttt{E}}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ & \noaction{}
+ & \noaction{}
+ & \noaction{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{EI\textsuperscript{B}}
+
+ % Load/Store/Evict
+ & \hitact{}
+ & \stallact{}
+ & \stallact{}
+
+ % Seeing Own Query
+ & \senddataact{\memorytarget{}}{\texttt{no-data}}, \setstateact{\texttt{I}}
+
+ % Data Reply
+ & \disablecell{}
+ & \disablecell{}
+
+ % GetS/GetM/PutM
+ &
+   \begin{tabular}{@{}c@{}}
+      \senddataact{\memorytarget{}}{\texttt{no-data}},\\
+      \senddataact{\sendertarget{}}{\simpledata{}},
+      \setstateact{\texttt{II\textsuperscript{B}}}
+   \end{tabular}
+ & \senddataact{\sendertarget{}}{\simpledata{}},
+   \setstateact{\texttt{II\textsuperscript{B}}}
+ & \disablecell{}
+ \\
+ \hline
+
+% \multicolumn{1}{l|}{}
+% & \multicolumn{6}{c||}{\textbf{Handling Requests}}
+% & \multicolumn{3}{c|}{\textbf{Handling Queries}}
+% \\
+% \cline{2-10}
+\end{tabular}

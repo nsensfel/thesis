@@ -1,0 +1,119 @@
+\subsection{Predictable MSI}
+\label{sec:related_works:pmsi}
+While not exactly a hardware modification per se, the use of a coherence
+protocol designed for its predictability is not likely to be available on COTS
+hardware, which is why the work presented in \cite{conf/rtas/HassanKP17} is
+included in this section.
+
+\cite{conf/rtas/HassanKP17} exposes the sources of unpredictability in the MSI
+protocol, and proposes a solution for each one of them. These solutions require
+some parts of the hardware connected to cache coherence mechanisms to be
+predictable. Combined with, PMSI (Predictable MSI), the coherence protocol they
+introduce, these solutions are indicated as sufficient to allow calculation of
+the worst case delays that may be incurred by each instruction.
+
+Translated to the formalism from Chapter~\ref{cha:cache_coherence}, the
+restrictions imposed on the hardware are as follow:
+\begin{enumerate}
+\item
+   Access to the interconnect is regulated by time slots. Caches may only send
+   queries to the interconnect during their assigned time slot.
+   \label{enum:pmsi_time_slot}
+\item
+   For a same memory element, the coherence manager sends replies to queries in
+   the order of their arrival.
+\item
+   Caches reply to queries in the order of their arrival. This is equivalent
+   to imposing $\cachedataoutfun{}$ to be a FIFO queue.
+\item
+   A write request to a cache for a memory element that it does not currently
+   hold with read-and-write permissions can only occur during that cache's
+   time slot.
+   \label{enum:pmsi_write_time}
+\item
+   Writing to a memory element not currently held with read-and-write
+   permissions requires all other caches' pending queries for that memory
+   element to be processed first. Basically, the write is stalled if there
+   are any queries in $\cachequeryinfun{}$ for that memory element.
+   \label{enum:pmsi_ordering}
+\item
+   Caches are predictible in the ordering of their processing of instructions
+   and external queries.
+\end{enumerate}
+
+\begin{figure}
+\centering
+\input{\chapterdirectory/figure/handling_it/pmsi_cache_controller.tex}
+\caption{Split-Transaction PMSI Automaton for Cache Controllers}
+\label{fig:pmsi_cc_table}
+\end{figure}
+
+\begin{figure}
+\centering
+\input{\chapterdirectory/figure/handling_it/pmsi_coherence_manager.tex}
+\caption{Possible Split-Transaction PMSI Automaton for the Coherence Manager}
+\label{fig:pmsi_mgr_table}
+\end{figure}
+
+Adapting \texttt{PMSI} to fit Chapter~\ref{cha:cache_coherence} is made easy by
+the fact that they also based their description on the notations introduced in
+\cite{Sorin:2011:PMC:2028905}. Figure~\ref{fig:pmsi_cc_table} shows how the
+cache controller behaves for each memory element.  This figure is almost
+identical to the one found in the paper presenting \texttt{PMSI}, with the
+following modifications:
+\begin{itemize}
+\item
+   A single \textit{Own Query} event is used instead of having
+   one per type of query. This makes the table more compact, as there is never
+   any state in which multiple categories of query have a different behavior
+   when it comes to the handling observing their own queries on the
+   interconnect.
+\item
+   The \texttt{Upg} query type, used to move from \texttt{S} to \texttt{M}, has
+   been merged into \getmquery{}, as the differentiation did not appear to have
+   any relevance to the protocol's behavior.
+\item
+   Emission of a \putmquery{} has been added as an action when receiving data
+   in either \texttt{IM\textsuperscript{D}I} and
+   \texttt{IM\textsuperscript{D}S}, as it would otherwise be impossible to exit
+   the state they lead to. The need for this has been confirmed during exchanges
+   with the authors.
+\end{itemize}
+\cite{conf/rtas/HassanKP17} does
+not include a table for the coherence manager, which is instead simply described
+as servicing the oldest pending query for a memory element every time it
+receives data. Figure~\ref{fig:pmsi_mgr_table} shows a coherence manager that
+would implement this behavior.
+
+By comparison to the \texttt{MSI} protocol described in
+Section~\ref{sec:split_msi}, \texttt{PMSI} features much fewer transient states.
+This is because the restrictions imposed on the system have removed:
+\begin{itemize}
+\item The possibility of receiving a reply to a query not yet handled:
+\texttt{IS\textsuperscript{BD}}, \texttt{IS\textsuperscript{B}},
+\texttt{IM\textsuperscript{BD}}, \texttt{IM\textsuperscript{B}},
+\texttt{SM\textsuperscript{BD}}, and \texttt{SM\textsuperscript{B}}.
+\item Cache to cache data messages, which merge cases that were separated
+because of whether data was sent only to another cache or also to the main
+memory:
+\texttt{IM\textsuperscript{D}SI}, \texttt{SM\textsuperscript{D}SI}.
+\item Sending data as a reaction to seeing another cache's query:
+\texttt{II\textsuperscript{B}} (now undistinct from
+\texttt{MI\textsuperscript{B}}, which is now \texttt{MI\textsuperscript{WB}}).
+\end{itemize}
+In \texttt{PMSI}, receiving data for a memory element currently held in a cache
+that may have modified it (e.g.~\texttt{M} state) always requires waiting for
+that cache's time slot in the TDMA, as it will not perform a write back without
+first broadcasting its own query indicating that it is about to do so. The cache
+then sends a data message to the system's main memory, which only then is able
+to reply to the original demand. While this is clearly penalizing in terms of
+performance, it does lessen the variability in time required for acquisition of
+data.
+
+In conclusion, \cite{conf/rtas/HassanKP17} addresses the issue of the
+predictability of memory access latency by replacing the cache coherence
+protocol and performing some other hardware modifications in order to have
+a generally slower but more easily computed and less fluctuating memory
+access time. No modification of the software is required.
+
+\stopallthesefloats

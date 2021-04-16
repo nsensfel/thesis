@@ -1,0 +1,28 @@
+\section{General Future Works}
+Overall, the framework proposed in this thesis would greatly benefit from
+further automation. Indeed, while the cache coherence protocol obtained through
+the identification process can already be automatically inserted into the model
+for analysis, there is still a need for numerous user actions in every
+contribution proposed in this thesis. Ideally, the user should only have to
+provide a description of the architecture through a dedicated description
+language and the program binaries. The framework would then generate a template
+for the coherence protocol identification in which only architecture specific
+instructions would have to be filled in by the user. The model would be
+automatically modified to match the architecture's description. It would also
+use the programs' binaries to generate corresponding automata (such as is done
+in the works presented in Chapter~\ref{cha:analyzing_rel_work}). The cache
+coherence interference analyzes would then automatically be performed,
+providing the user with the results.
+
+Another point which should be the focus of future works is the range of
+supported architectures. This would start by taking into account more
+components in the model, such as the pipelines present in the approaches from
+Chapter~\ref{cha:analyzing_rel_work}. If programs are analyzed using their
+binary forms, support for different instruction sets would become a deciding
+factor in the usability of the framework.
+
+Lastly, future works could involve the integration of this framework within a
+more general analysis of the multi-core architecture, exporting the results on
+cache coherence interference in a way that can be exploited by existing tools.
+For example, being able to interface with OTAWA
+\cite{10.1007/978-3-642-16256-5_6} in order to compute more accurate WCETs.

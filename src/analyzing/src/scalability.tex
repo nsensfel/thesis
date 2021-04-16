@@ -1,0 +1,68 @@
+\stopallthesefloats
+\section{Model Checking Scalability Considerations}
+The analyses presented in this chapter rely on model checking. To validate that
+the model verifies a property, model checking gradually generates and explores
+all possible traces from the model. The time required for this exploration is
+the main limiting factor of the analyses of the chapter.
+
+Indeed, checking the model described in
+Chapter~\ref{cha:modeling_cache_coherence} can become unreasonably time
+consuming. A part of the issue stems from the fact that, despite the efforts to
+reduce the amount of undesired non-determinism described in the previous
+chapter, some of it remains.
+
+Instead of going over each property presented in this chapter, it uses the
+property that requires the largest exploration: In all traces, there is a state
+in which all cores have completed their program. This corresponds to the
+following formula:
+\begin{lstlisting}
+A<>(Core1.terminated and Core2.terminated)
+\end{lstlisting}
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+Cores                & 2      & 3     & 4\\
+\hline
+Execution time (s)   & 0.593  & 12.453   & 425.109\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Model Checking execution time relative to number of cores}
+\label{fig:exec_time_cores}
+\end{figure}
+
+Figure~\ref{fig:exec_time_cores} shows the execution time of the model checking
+process with varying number of cores in the modeled architecture. The 2 cores
+column corresponds to the model described in
+Section~\ref{sec:analysis:demo_model}. The cores added for the 3 and 4 cores
+benchmarks are clones of the second core. The results clearly show that
+increasing the number of cores will quickly reach execution times beyond usable
+levels. This is not unexpected: even useful non-determinism such as the order
+of arbitration for the interconnect generate by itself a number of traces
+exponential to the number of cores (since all possible orders are explored).
+
+\begin{figure}
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+Program Size         & 10      & 20      & 30     & 40\\
+\hline
+Execution time (s)   & 0.593   & 1.297   & 1.906  & 2.266\\
+\hline
+\end{tabular}
+\end{center}
+\caption{Model Checking execution time relative to length of programs}
+\label{fig:exec_time_program}
+\end{figure}
+
+Figure~\ref{fig:exec_time_program} shows how long model checking takes on the
+dual core from Section~\ref{sec:analysis:demo_model} depending on the number of
+instructions for the program on each core. 10 instructions corresponds to the
+original number of instructions. In order to add more instructions, the programs
+were extended by appending a copy of all their current instructions. The results
+show that increasing the length of programs does not lead to a rapid increase of
+model checking times.
+
+\stopallthesefloats

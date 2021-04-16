@@ -1,0 +1,326 @@
+\begin{tabular}{|c|c|c|c|c|c|c|}
+\cline{2-7}
+\multicolumn{1}{c|}{}
+ & \multicolumn{2}{c|}{\textbf{$\langle{}$Load,-,-$\rangle{}$}}
+ & \multicolumn{2}{c|}{\textbf{$\langle{}$Store,-,-$\rangle{}$}}
+ & \multicolumn{2}{c|}{\textbf{$\langle{}$Evict,-,-$\rangle{}$}}
+\\
+\hline
+   \multirow{2}{*}{\textbf{Origin}}
+ & \multicolumn{2}{c|}{\textbf{Destination}}
+ & \multicolumn{2}{c|}{\textbf{Destination}}
+ & \multicolumn{2}{c|}{\textbf{Destination}}
+\\
+ & \textbf{Observ}
+ & \textbf{Match}
+ & \textbf{Observ}
+ & \textbf{Match}
+ & \textbf{Observ}
+ & \textbf{Match}
+\\
+\hline
+
+%%%% I,\benchi{},\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchi{},\benchi{},\benchi{}$\rangle$}
+
+% Load,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benche{},\benchi{},\benchi{}$\rangle$}
+& \texttt{$\langle$E,I,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+& \multirow{16}{*}{\texttt{$\langle$\benchm{},\benchi{},\benchi{}$\rangle$}}
+& \multirow{16}{*}{\texttt{$\langle$M,I,I$\rangle$}}
+
+% Evict,-,- Destination (Expected, Observed)
+& \multirow{3}{*}{\texttt{$\langle$\benchi{},\benchi{},\benchi{}$\rangle$}}
+& \multirow{3}{*}{\texttt{$\langle$I,I,I$\rangle$}}
+\\
+\cline{1-3}
+%\cline{6-7}
+
+%%%% E,\benchi{},\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benche{},\benchi{},\benchi{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benche{},\benchi{},\benchi{}$\rangle$}
+& \texttt{$\langle$E,I,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+&% \texttt{\benchi{},\benchi{},\benchi{}$\rangle$}
+&% \texttt{\benchi{},\benchi{},\benchi{}$\rangle$}
+\\
+\cline{1-3}
+%\cline{6-7}
+
+%%%% M,\benchi{},\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchm{},\benchi{},\benchi{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchm{},\benchi{},\benchi{}$\rangle$}
+& \texttt{$\langle$M,I,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+&% \texttt{\benchi{},\benchi{},\benchi{}}
+&% \texttt{\benchi{},\benchi{},\benchi{}}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% I,\benchi{},\benchm{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchi{},\benchi{},\benchm{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchi{},\benchx{}$\rangle$}
+& \texttt{$\langle$S,I,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchi{},\benchm{}$\rangle$}
+& \texttt{$\langle$I,I,M$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% I,\benchi{},\benche{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchi{},\benchi{},\benche{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchi{},\benchx{}$\rangle$}
+& \texttt{$\langle$S,I,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchi{},\benche{}$\rangle$}
+& \texttt{$\langle$I,I,E$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% S,\benchi{},\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchs{},\benchi{},\benchi{}$\rangle$}
+
+% Load,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchi{},\benchi{}$\rangle$}
+& \texttt{$\langle$S,I,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchi{},\benchi{}$\rangle$}
+& \texttt{$\langle$I,I,I$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% X,\benchs{},\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchx{},\benchs{},\benchi{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchx{},\benchs{},\benchi{}$\rangle$}
+& \texttt{$\langle$S,S,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchs{},\benchi{}$\rangle$}
+& \texttt{$\langle$I,S,I$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% \benchx{},\benchx{},\benchs{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchx{},\benchx{},\benchs{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchx{},\benchx{},\benchs{}$\rangle$}
+& \texttt{$\langle$S,S,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchx{},\benchs{}$\rangle$}
+& \texttt{$\langle$I,S,S$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% \benchs{},\benchx{},\benchx{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchs{},\benchx{},\benchx{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchx{},\benchx{}$\rangle$}
+& \texttt{$\langle$S,S,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchx{},\benchx{}$\rangle$}
+& \texttt{$\langle$I,S,S$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% \benchs{},\benchx{},\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchs{},\benchx{},\benchi{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchx{},\benchi{}$\rangle$}
+& \texttt{$\langle$S,S,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchx{},\benchi{}$\rangle$}
+& \texttt{$\langle$I,S,I$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% I,\benchi{},\benchs{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchi{},\benchi{},\benchs{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchi{},\benchx{}$\rangle$}
+& \texttt{$\langle$S,I,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchi{},\benchs{}$\rangle$}
+& \texttt{$\langle$I,I,S$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% X,\benchi{},\benchi{} %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchx{},\benchi{},\benchi{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchx{},\benchi{},\benchi{}$\rangle$}
+& \texttt{$\langle$S,I,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchi{},\benchi{}$\rangle$}
+& \texttt{$\langle$I,I,I$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+
+%%%% I,\benchi{},X %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchi{},\benchi{},\benchx{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchi{},\benchx{}$\rangle$}
+& \texttt{$\langle$S,I,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchi{},\benchx{}$\rangle$}
+& \texttt{$\langle$I,I,S$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% I,\benchs{},X %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchi{},\benchs{},\benchx{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchx{},\benchx{}$\rangle$}
+& \texttt{$\langle$S,S,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchs{},\benchx{}$\rangle$}
+& \texttt{$\langle$I,S,S$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% I,X,X %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchi{},\benchx{},\benchx{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchs{},\benchx{},\benchx{}$\rangle$}
+& \texttt{$\langle$S,S,S$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchx{},\benchx{}$\rangle$}
+& \texttt{$\langle$I,S,S$\rangle$}
+\\
+\cline{1-3}
+\cline{6-7}
+
+%%%% X,X,I %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Origin
+\texttt{$\langle$\benchx{},\benchx{},\benchi{}$\rangle$}
+
+% Destination (Expected, Observed)
+& \texttt{$\langle$\benchx{},\benchx{},\benchi{}$\rangle$}
+& \texttt{$\langle$S,S,I$\rangle$}
+
+% Store,-,- Destination (Expected, Observed)
+&
+&
+
+% Evict,-,- Destination (Expected, Observed)
+& \texttt{$\langle$\benchi{},\benchx{},\benchi{}$\rangle$}
+& \texttt{$\langle$I,S,I$\rangle$}
+\\
+\hline
+\end{tabular}

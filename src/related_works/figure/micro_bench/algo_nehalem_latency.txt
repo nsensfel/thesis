@@ -1,0 +1,6 @@
+thread 0: warm-up TLB
+if (N>0): sync of thread 0 and N
+thread N: access data (-> E/M/S)
+if (N>0): sync of thread 0 and N
+all threads: flush caches (optional)
+thread 0: measure execution time

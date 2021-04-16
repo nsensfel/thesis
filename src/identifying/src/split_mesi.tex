@@ -1,0 +1,86 @@
+\section{Hypothetical Split-Transaction MESI Protocol}
+\label{sec:identification:mesi}
+\begin{figure}[htb!]
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\input{\chapterdirectory/figure/split_mesi_cache_controller.tex}
+}
+\end{center}
+\caption{Description of the cache controller for the MESI protocol}
+\label{fig:mesi_cc_table}
+\end{figure}
+
+\begin{figure}[htb!]
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\input{\chapterdirectory/figure/split_mesi_coherence_manager.tex}
+}
+\end{center}
+\caption{Description of the coherence manager for the MESI protocol}
+\label{fig:mesi_cmgr_table}
+\end{figure}
+
+Following the information available in documentation of the architecture
+(\cite{T4240} and \cite{e6500}), the first step is to define an ambiguity-free
+description of the MESI protocol (Figures~\ref{fig:mesi_cc_table} and
+\ref{fig:mesi_cmgr_table}).  Introduced in
+\cite{Papamarcos:1984:LCS:773453.808204}, the MESI protocol adds a fourth stable
+state, \textit{Exclusive}, which indicates that not only does the cache
+controller have read-only permissions, but also that no other cache currently
+holds any permission to access the memory element. This allows the cache
+controller to upgrade to read-and-write permissions without having to perform a
+costly communication. Just as it is used to keep track of whether a cache holds
+a read-and-write copy of a memory element in the MSI protocol, this definition
+of the MESI protocol uses the coherence manager to detect when a cache can be
+said to be the sole owner of a memory element.
+
+This version of the MESI protocol uses three types of data replies:
+\texttt{data}, \texttt{data-e}, and \texttt{no-data}. \texttt{data} indicates
+that the value associated with the memory element is sent.  By sending a
+\texttt{no-data} reply, cache controllers can indicate to the coherence manager
+that the memory element has been discarded (its value is not part of the
+reply). The coherence manager can send \texttt{data-e} replies, which are
+equivalent to \texttt{data}, with the added information that the recipient is
+its sole owner.
+
+Here are some examples of remarkable behaviors exhibited by this definition of
+the MESI protocol.
+
+\begin{example}[\textbf{Reaching \texttt{E}}]
+\label{ex:reaching_e}
+To hold a memory element in the \texttt{E} state, a cache must be the only one
+to have a copy of that memory element. The caches rely on the coherence manager
+to know when it is the case. The coherence manager uses its \texttt{I} state to
+mark memory elements that are sure not to be in any caches.  Thus, if no cache
+controllers hold the memory element and the coherence manager is in \texttt{I},
+whenever a core \texttt{loads} the data it becomes \texttt{E} in its cache,
+receiving the \texttt{data} message leads it to the \texttt{E} state instead of
+the \texttt{S} state.
+
+It is important to notice that it is not easy for the coherence manager to detect whether a cache controller is the sole owner.
+Indeed, the
+coherence manager is not always able to know that all caches have evicted their
+copy of a memory element: in Figure~\ref{fig:mesi_cc_table}, the cache
+controller's table indicates that an eviction from \texttt{S} does not lead to
+any message.
+The only way for the coherence
+manager to return to the \texttt{I} state is for a cache to evict its copy
+of a memory element in either the \texttt{E} or \texttt{M} state without another
+cache asking for a copy.
+\end{example}
+
+\begin{example}[\textbf{Sharing from \texttt{E}}]
+\label{ex:sharing_from_e}
+From the coherence manager's point of view, there is no difference between a
+cache controller owning a memory element in the \texttt{E} state and one in the
+\texttt{M} state. Thus, if there is a cache owning a copy of a memory element in
+the \texttt{E} state, the coherence manager will assume that this cache may have
+modified the value and that the main memory no longer holds the correct value.
+As a result, the cache holding the \texttt{E}xclusive copy of the memory element
+will transfer it to any other cache that asks for it. If this is caused by
+another cache demanding a read-only copy (\texttt{GetS}), the coherence manager
+will expect an update on the value of the memory element. This update can come
+in two forms: either the cache that exclusively held the memory element made a
+modification (in which case it would have moved to the \texttt{M}odified state)
+and sends a \texttt{data} message, or it has not and it sends a \texttt{no-data} message.
+\end{example}

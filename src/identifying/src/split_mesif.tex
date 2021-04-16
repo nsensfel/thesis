@@ -1,0 +1,57 @@
+\section{Hypothetical Split-Transaction MESIF Protocol}
+\label{sec:identification:mesif}
+As the hypothetical protocol has been invalidated, a new one matching the
+observations must be defined. The difference of behavior between \benchs{}
+and \benchx{} points to a MESIF protocol.
+
+\begin{figure}[htb!]
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\input{\chapterdirectory/figure/split_mesif_cache_controller.tex}
+}
+\end{center}
+\caption{Description of the cache controller for the MESIF protocol}
+\label{fig:mesif_cc_table}
+\end{figure}
+
+\begin{figure}[htb!]
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\input{\chapterdirectory/figure/split_mesif_coherence_manager.tex}
+}
+\end{center}
+\caption{Description of the coherence manager for the MESIF protocol}
+\label{fig:mesif_cmgr_table}
+\end{figure}
+
+Figures~\ref{fig:mesif_cc_table} and \ref{fig:mesif_cmgr_table} show a formal
+definition of the MESIF protocol.  Introduced in \cite{mesif}, this protocols
+adds a \textit{Forward} stable state, which is equivalent to a \textit{Shared}
+state with the added constraint of being responsible for the propagation of the
+memory element's current value.  This makes it possible to avoid reading from
+the system's main memory even when multiple caches hold the same memory element.
+However, unlike the \textit{Exclusive} state, it does not allow the cache to
+upgrade to a \textit{Modified} state by itself, since the other caches still do
+have to be informed that their copies are out-of-date.
+
+As with any stable state that gives a cache the responsibility of propagating
+the memory element's current value, the challenge lies in determining when a
+cache can enter that state, and making sure that the responsibility is properly
+transferred when the cache leaves it. The coherence manager keeps track of which
+cache holds memory elements in the \textit{Forward} state. As this cache cannot
+actually make modifications while in this state, informing the coherence manager
+that it was left does not require sending any kind of \texttt{data} message: a
+simple \texttt{PutM} query broadcast is sufficient.
+
+A cache moving from \textit{Forward} to \textit{Modified} still has to broadcast
+a \texttt{GetM} query and process all the queries that preceded before
+proceeding. This is unclear in the definitions of the protocol I have seen so
+far, but this version of the protocol assumes that if the cache still is
+responsible for the propagation of the memory element when it sees its own
+\texttt{GetM} query (meaning that it stayed in the
+\texttt{FM\textsuperscript{B}} state), then it should be able to simply move to
+the \textit{Modified} state without receiving any \texttt{data} reply. However,
+if the responsibility was lost (because of either an external \texttt{GetS} or
+\texttt{GetM} query), then it will need to re-acquire the current value of the
+memory element as a \texttt{data} reply before entering the \textit{Modified}
+state.

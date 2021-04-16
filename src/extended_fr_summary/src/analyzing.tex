@@ -1,0 +1,345 @@
+\section{Analyser la coh\'erence de cache}
+\label{fr:sec:analyze}
+Cette section présente les analyses permettant d'utiliser le modèle de
+la section précédente pour mettre en évidence les interférences liées
+à la cohérence de cache. Une partie de ces travaux ont été publiés
+dans \cite{ecrts19}.
+
+\begin{figure}[hbt]
+  \centering
+  \resizebox{.7\linewidth}{!}{
+\input{\chapterdirectory/figure/analysis/summary.tex}}
+\caption{Vue d'ensemble des analyses proposées}
+\label{fr:fig:analysis:summary}
+\end{figure}
+
+Le modèle présenté dans la section précédente comporte des paramètres (par exemple la durée d'un accès à la mémoire) qui doivent être instanciés via une campagne de benchmarks afin de mener les analyses qui sont décrites ici. Ce processus d'instanciation est en dehors du périmètre de la thèse.
+La Figure~\ref{fr:fig:analysis:summary} fournit une vue d'ensemble des analyses
+proposées. Les rectangles avec fond gris correspondent aux analyses et ceux sans
+arrière plan sont les résultats principaux. Les éléments sans bordure sont des
+résultats accessoires. Les bordures en pointillés indiquent les résultats
+intermédiaires, qui ne sont pas censés être utiles en eux-mêmes.
+
+% Pour que les analyses présentées dans cette section fournissent des informations
+% intéressantes à l'applicant, le modèle doit être instancié afin de correspondre
+% à l'architecture cible. Cela signifie que les paramètres listés dans
+% l'Annexe~\ref{app:model_parameters} ont été définis suite
+% à une campagne de benchmarks mesurant la performance.
+
+\begin{figure}[hbt]
+\begin{minipage}[c]{0.55\linewidth}
+\includegraphics[width=\linewidth]{\chapterdirectory/figure/analysis/model_overview.pdf}
+\caption{Aperçu de l'exemple de modèle instancié}
+\label{fr:fig:analysis:model}
+\end{minipage}
+\begin{minipage}[t]{0.2\linewidth}
+\begin{enumerate}
+  \setlength{\itemsep}{0pt}%
+   \setlength{\parskip}{0pt}%
+\item \texttt{store 1}
+\item \texttt{store 2}
+\item \texttt{load 1}
+\item \texttt{store 1}
+\item \texttt{load 3}
+\item \texttt{store 2}
+\item \texttt{load 1}
+\item \texttt{store 1}
+\item \texttt{load 2}
+\item \texttt{store 2}
+\item \texttt{end}
+\end{enumerate}
+\caption{Modèle de programme pour Cœur 1}
+\label{fr:fig:analysis:demo_prog1}
+\end{minipage}
+\begin{minipage}[t]{0.2\linewidth}
+\begin{enumerate}
+  \setlength{\itemsep}{0pt}%
+   \setlength{\parskip}{0pt}%
+\item \texttt{store 1}
+\item \texttt{store 3}
+\item \texttt{load 3}
+\item \texttt{store 2}
+\item \texttt{load 1}
+\item \texttt{store 2}
+\item \texttt{load 3}
+\item \texttt{store 1}
+\item \texttt{load 2}
+\item \texttt{store 3}
+\item \texttt{end}
+\end{enumerate}
+\caption{Modèle de programme pour Cœur 2}
+\label{fr:fig:analysis:demo_prog2}
+\end{minipage}
+\end{figure}
+
+Le modèle instancié utilisé pour l'illustration des analyses dans cette section
+est représenté dans la Figure~\ref{fr:fig:analysis:model}. Celui-ci utilise un
+protocole MESI dont les détails sont fournis dans la version complète de la
+thèse (voir Figure~\ref{fig:mesi_cc_table}). Le programme
+utilisé par chaque cœur est indiqué par les
+Figures~\ref{fr:fig:analysis:demo_prog1} et \ref{fr:fig:analysis:demo_prog2}.
+Ces modèles instanciés comportent toujours de l'indéterminisme, qui
+représente ce que l'applicant ne connaît pas ou ne peut pas contrôler
+sur l'architecture.  Par conséquent, le modèle instancié admet
+toujours plusieurs traces d'exécution possibles. Les analyses étant
+basées sur l'algorithme de model checking d'UPPAAL, toutes ces traces
+sont explorées.
+
+
+\subsection{Analyse de l'impact sur le temps d'exécution}
+\label{fr:sec:analysis:wcet}
+Cette première analyse regarde les effets de l'interférence sur le temps
+d'exécution total des programmes. Notons cependant qu'il s'agit du temps d'exécution calculé sur le modèle
+qui peut s'éloigner du temps d'exécution sur l'architecture réelle, notamment en raison des abstractions faites dans la modélisation ou d'une instanciation du modèle insuffisamment précise. 
+Les valeurs obtenues sont tout de même intéressantes à comparer avec
+d'autres analyses de temps sur un modèle similaire, par exemple pour
+le calcul de facteurs de ralentissement (voir
+Définition~\ref{fr:def:slowdownfactor}). Par exemple, on peut obtenir
+la proportion du temps d'exécution causée par la cohérence de cache en
+comparant le modèle avec une version adaptée du même modèle dans laquelle
+aucune variable n'est partagée. Bien que cette version adaptée ne soit
+probablement pas réaliste, son temps d'exécution peut être utilisé
+comme point de référence.
+
+\begin{definition}[Impact de la cohérence de cache sur le temps d'exécution]
+Soit $W_{s}$ le temps d'exécution d'un programme sur le modèle instancié, et
+$W_{p}$ son temps d'exécution sur une instance du même modèle dans laquelle
+toutes les variables ont été rendues privées. La part de $W_{s}$ correspondant
+aux mécanismes de cohérence de cache peut être obtenue avec l'équation suivante:
+$T_{cc} = W_{s} - W_{p}$
+\end{definition}
+
+Pour obtenir les valeurs de $W_{s}$ et $W_{p}$ en utilisant UPPAAL, on emploie
+la vérification de modèle. En effet, ces valeurs correspondent au maximum d'une
+horloge mesurant le temps d'exécution du cœur étudié. Il est donc possible de la
+récupérer avec une formule semblable à\\
+\lstinline!sup{not Core1.Terminated}: Core1.runtime!, qui retourne le maximum
+pour l'horloge \lstinline!Core1.runtime! dans l'ensemble des états du système
+pour lesquels l'automate \lstinline!Core1! n'est pas dans la localité
+\lstinline!Terminated!.
+
+\begin{example}[Exemple de mesures de temps d'exécution]
+\begin{figure}[hbt]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\cline{2-5}
+\multicolumn{1}{c|}{}
+      & $W_s$ & $W_p$ & $T_{cc}$ & Isolation \\
+\hline
+Cœur 1 & 2652 & 1102 & 1550 & 702\\
+\hline
+Cœur 2 & 2452 & 1452 & 1000 & 904\\
+\hline
+\end{tabular}
+\caption{Exemple d'analyse de temps d'exécution}
+\label{fr:fig:analysis:wcet_calc}
+\end{figure}
+La Figure~\ref{fr:fig:analysis:wcet_calc} indique la valeur maximale du temps
+d'exécution pour chaque cœur, avec différentes versions de l'exemple du modèle
+instancié.
+$W_s$ correspond à celle du modèle instancié original (et donc avec les
+variables partagées). $W_p$ correspond à celle d'un modèle dans lequel toutes les
+variables ont été rendues privées. Ici, on incrémente les adresses d'éléments
+mémoires du programme sur le Cœur 2 par $3$ pour éviter tout partage. $T_{cc}$
+correspond à la part du temps d'exécution de $W_s$ prise par les mécanismes de
+cohérence cache. Enfin, pour montrer un exemple de facteur de ralentissement, on
+étudie aussi le cas où chaque programme est exécuté en isolation.
+Les résultats de l'analyse sont donc:
+\begin{itemize}
+    \setlength{\itemsep}{0pt}%
+   \setlength{\parskip}{0pt}%
+\item
+   Cœur 1 souffre d'un facteur de ralentissement de $2652/702 = 3,77$ quand son
+   programme tourne en même temps que celui de Cœur 2, comparé à son exécution
+   en isolation.
+\item
+   Cœur 2 souffre d'un facteur de ralentissement de $2452/904 = 2,71$ quand son
+   programme tourne en même temps que celui de Cœur 1, comparé à son exécution
+   en isolation.
+\item
+   Exécuter les deux programmes en isolation l'un après l'autre aurait un temps
+   d'exécution maximum de $702 + 904 = 1606$ unités de temps.
+\item
+   Exécuter les deux programmes en parallèle a un temps d'exécution maximal de
+   $\max(2652, 2452) = 2652$.
+\item
+   Exécuter les deux programmes en parallèle mais sans variables partagées a un
+   temps d'exécution maximal de $\max(1102, 1452) = 1452$.
+\item
+   Approximativement $(1550/2652)*100=58,44 \%$  du temps d'exécution de
+   Cœur 1 est causé par l'interférence liée à la cohérence de caches.
+\item
+   Approximativement $(1000/2452)*100=40,78\%$ du temps d'exécution de
+   Cœur 2 est causé par l'interférence liée à la cohérence de caches.
+\end{itemize}
+\end{example}
+
+
+\subsection{Catégorisation des accès au cache}
+\label{fr:sec:cat_cache_access}
+Une interférence peut empêcher une instruction de récupérer une valeur dans le cache (parce que son contenu a été modifié récemment à cause d'une autre instruction). C'est ce qu'on appelle un \emph{cache-miss}.
+Les analyses de cette
+section s'intéressent à la catégorisation des instructions en fonction des \emph{cache-miss} observés. C'est une technique utilisée dans la littérature (voir
+Section~\ref{fr:sec:handling_it}).
+L'objectif de cette analyse est donc de classer chaque instruction en
+tant que \textit{always-hit} (cache toujours prêt),
+\textit{always-miss} (cache jamais prêt) ou \textit{uncategorized} (le
+cache peut être prêt ou ne pas l'être selon l'exécution). Pour cela,
+on utilise l'opérateur de logique temporelle \agop{} afin de s'assurer
+que pour toute trace d'exécution du modèle, l'instruction donnée:
+\begin{itemize}
+    \setlength{\itemsep}{0pt}%
+   \setlength{\parskip}{0pt}%
+\item Est résolue par le cache immédiatement, dans quel cas l'instruction est
+classée \textit{always-hit}.
+\item N'est pas résolue par le cache immédiatement et donc
+classée \textit{always-miss}.
+\item Sinon, on la classe comme \textit{uncategorized}.
+\end{itemize}
+
+\begin{example}[Catégorisation des accès au cache]
+\label{fr:ex:analysis:instr_chara}
+\begin{figure}[hbt]
+\begin{center}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}%
+   \setlength{\parskip}{0pt}%
+\item \texttt{store 1} est classé \texttt{AM}.
+\item \texttt{store 2} est classé \texttt{AM}.
+\item \texttt{load 1} est classé \texttt{UN}.
+\item \texttt{store 1} est classé \texttt{UN}.
+\item \texttt{load 3} est classé \texttt{AM}.
+\item \texttt{store 2} est classé \texttt{AM}.
+\item \texttt{load 1} est classé \texttt{AH}.
+\item \texttt{store 1} est classé \texttt{AM}.
+\item \texttt{load 2} est classé \texttt{UN}.
+\item \texttt{store 2} est classé \texttt{UN}.
+\end{enumerate}
+\caption{Catégorisation pour le Cœur 1}
+\label{fr:fig:analysis:demo_chara_prog1}
+\end{subfigure}
+\begin{subfigure}[t]{0.45\textwidth}
+\centering
+\begin{enumerate}
+    \setlength{\itemsep}{0pt}%
+   \setlength{\parskip}{0pt}%
+\item \texttt{store 1} est classé \texttt{AM}.
+\item \texttt{store 3} est classé \texttt{AM}.
+\item \texttt{load 3} est classé \texttt{AH}.
+\item \texttt{store 2} est classé \texttt{AM}.
+\item \texttt{load 1} est classé \texttt{AM}.
+\item \texttt{store 2} est classé \texttt{UN}.
+\item \texttt{load 3} est classé \texttt{AH}.
+\item \texttt{store 1} est classé \texttt{AM}.
+\item \texttt{load 2} est classé \texttt{UN}.
+\item \texttt{store 3} est classé \texttt{AM}.
+\end{enumerate}
+\caption{Catégorisation pour le Cœur 2}
+\label{fr:fig:analysis:demo_chara_prog2}
+\end{subfigure}
+\end{center}
+\caption{Exemple de catégorisation des accès cache}
+\label{fr:fig:analysis:demo_chara_progs}
+\end{figure}
+La Figure~\ref{fr:fig:analysis:demo_chara_progs} montre le résultat de la
+catégorisation de chaque instruction de notre exemple.
+\texttt{AH} correspond à \textit{always-hit}, \texttt{AM} correspond
+à \textit{always-miss} et \texttt{UN} correspond
+à \textit{uncategorized}.
+\end{example}
+
+Cette catégorisation des instructions permet de déterminer quelles
+instructions font varier le temps d'exécution. Cependant, certaines de ces
+variations ne sont pas liées à la cohérence de cache. Pour
+pouvoir répondre au besoin de la certification, il va donc être
+nécessaire d'analyser l'interférence elle-même.
+
+\subsection{Catégorisation de l'interférence}
+\label{fr:sec:analysis:exposing_interference}
+Pour pouvoir comprendre la cause et les effets des interférences générées par
+la cohérence de cache, nous proposons de les classifier en fonction de leurs effets
+sur le cache affecté. Cette section présente les trois catégories
+d'interférences proposées dans cette thèse.
+
+\begin{definition}[Interférence mineure]
+On considère qu'un cache subit une interférence mineure lorsqu'il reçoit une
+demande en provenance d'un autre cache sans que cette demande ne nécessite
+d'actions de sa part. En effet, le cache a alors pris le temps de traiter une
+demande sans que cela n'ait eu d'utilité.
+\end{definition}
+
+\begin{example}[Interférence mineure]
+Le protocole MSI simplifié de la Section~\ref{fr:sec:cache_coherence_msi}
+présente des interférences mineures lorsqu'un cache tenant un élément mémoire
+dans l'état \texttt{I} reçoit des demandes, ou qu'il reçoit un \texttt{GetS}
+(demande d'accès en lecture) alors qu'il a l'élément en \texttt{S}.
+\end{example}
+
+\begin{definition}[Interférence de rétrogradation]
+On considère qu'un cache subit une interférence de rétrogradation lorsqu'il
+perd les permissions d'écriture sur un élément mémoire suite à la demande d'un
+autre cache.
+\end{definition}
+
+\begin{example}[Interférence de rétrogradation]
+Le protocole MSI simplifié de la Section~\ref{fr:sec:cache_coherence_msi}
+présente une interférence de rétrogradation lorsqu'un cache tenant un élément
+mémoire dans l'état \texttt{M} reçoit une demande \texttt{GetS} de la part d'un
+autre cache. En effet, il passe alors à l'état \texttt{S} et perd ses
+permissions d'écriture.
+\end{example}
+
+\begin{definition}[Interférence d'expulsion]
+On considère qu'un cache subit une interférence d'expulsion lorsqu'il perd
+toutes ses permissions sur un élément mémoire suite à la demande d'un autre
+cache.
+\end{definition}
+
+\begin{example}[Interférence d'expulsion]
+Le protocole MSI simplifié de la Section~\ref{fr:sec:cache_coherence_msi}
+présente des interférences d'expulsion losrqu''un cache tenant un élément mémoire
+dans l'état \texttt{S} ou \texttt{M} reçoit une demande \texttt{GetM} (demande
+d'accès en lecture et écriture) de la part d'un autre cache. En effet, il passe
+alors à l'état \texttt{I} et perd toutes ses permissions.
+\end{example}
+
+\subsection{Révéler les interférences liées à la cohérence de cache}
+\label{fr:sec:analysis:missing_link}
+Pour révéler toutes les interférences causées par la cohérence de
+cache en tenant compte des effets catégorisés, il suffit de
+faire en sorte que le modèle détecte les cas où l'interférence a
+affecté une instruction. Cela permet alors d'utiliser les outils de
+model checking d'UPPAAL pour déterminer quelle instruction cause
+une interférence sur quelle autre instruction.
+Ainsi, cette section identifie les interférences liées à la cohérence de cache en
+définissant deux ensembles finis $S_A$ et $S_E$ composés de triplets
+$\langle I_o, E, I_t \rangle$, tels que $I_o$ correspond à l'instruction
+causant une interférence de type $E$ sur l'instruction $I_T$. L'ensemble
+$S_A$ contient les triplets pour lesquels l'interférence est certaine de se
+produire alors que $S_E$ correspond à ceux pour lesquels au moins une exécution
+présente l'interférence en question.
+Combiné avec les résultats de l'analyse de la
+Section~\ref{fr:sec:cat_cache_access}, ceci fournit à l'applicant à la fois les
+causes et les effets des interférences liées à la cohérence de cache dans le
+système modélisé.
+
+\begin{figure}[hbt]
+\centering
+\input{\chapterdirectory/figure/analysis/instruction_to_instruction.tex}
+\caption{Interférence dans l'exemple de modèle instancié}
+\label{fr:fig:analysis:interference_between_instructions}
+\end{figure}
+
+\begin{example}[Interférences dans notre exemple]
+  La Figure~\ref{fr:fig:analysis:interference_between_instructions}
+  montre les interférences entre les instructions des programmes de
+  l'exemple. Les flèches partent de l'instruction générant
+  l'interférence. Celles qui sont en pointillés indiquent une
+  interférence ne se produisant pas dans certaines des traces
+  d'exécution du modèle.  \lstinline!EX! correspond à une interférence
+  d'expulsion et \lstinline!DE!  à une interférence de rétrogradation.
+  La colonne de gauche correspond au programme de Cœur 1 et celle de
+  droite à celui de Cœur 2.  
+\end{example}

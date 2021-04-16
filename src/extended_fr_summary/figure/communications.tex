@@ -1,0 +1,61 @@
+\begin{tikzpicture}[
+  font=\sffamily,
+  every matrix/.style={ampersand replacement=\&,column sep=2cm,row sep=2cm},
+  source/.style={draw,thick,rounded corners,fill=yellow!20,inner sep=.3cm},
+  process/.style={draw,thick,circle,fill=blue!20},
+  sink/.style={source,fill=green!20},
+  datastore/.style={draw,very thick,shape=datastore,inner sep=.3cm},
+  dots/.style={gray,scale=2},
+  to/.style={->,>=stealth',shorten >=1pt,semithick,font=\sffamily\footnotesize},
+  every node/.style={align=center}]
+
+  % Position the nodes using a matrix layout
+  \matrix{
+    \node[source] (core0) {Core 0};
+      \& \node[source] (cache0) {Cache 0};
+      \\
+
+    \node[source] (queryfifo0) {Query FIFO 0}; \& \&
+    \node[source] (datafifo0) {Data FIFO 0};
+    \\
+      \& \node[sink] (databus) {Data Bus}; \&
+      \\
+      \node[sink] (querybus) {Query Bus}; \&
+      \node[sink] (queryfifomgr) {Query FIFO Mgr};\&
+      \node[sink] (datafifomem) {Data FIFO Mem};
+      \\\\
+      \& \node[sink] (cmgr) {Coherence Manager}; \&
+      \node[sink] (mem) {Memory};\\
+  };
+
+  % Draw the arrows between the nodes and label them.
+  \draw[to] (core0) to[bend left=5] node[midway,above] {$CPU\_REQ[0]$} (cache0);
+  \draw[to] (cache0) to[bend left=5] node[midway,below] {$CPU\_ACK[0]$} (core0);
+
+  \draw[to] (queryfifo0) to[bend left=5] node[midway,above,sloped] {\!\!\!\!\!\!\!\!$QUERY\_IN[0]$} (cache0);
+  \draw[to] (cache0) to[bend left=5] node[midway,below,sloped] {$QUERY\_OUT[0]$} (queryfifo0);
+  \draw[to] (datafifo0) to[bend left=5] node[midway,below,sloped] {$DATA\_IN[0]$} (cache0);
+  \draw[to] (cache0) to[bend left=5] node[midway,above,sloped] {$DATA\_OUT[0]$} (datafifo0);
+%  \draw[to] (daq) -- node[midway,right] {raw event data\\level 1} (buffer);
+  \draw[to] (queryfifo0) to[bend left=5] node[midway,above,sloped] {$QUERY\_TO\_BUS[0]$} (querybus);
+  \draw[to] (querybus) to[bend left=5] node[midway,above,sloped] {$QUERY\_BROADCAST$} (queryfifo0);
+
+
+  \draw[to] (datafifo0) to[bend left=5] node[midway,below,sloped] {$DATA\_TO\_BUS$} (databus);
+  \draw[to] (databus) to[bend left=5] node[midway,above,sloped] {$DATA\_TRANS[0]$} (datafifo0);
+  \draw[to] (datafifomem) to[bend left=5] node[midway,below,sloped] {$DATA\_TO\_BUS$} (databus);
+  \draw[to] (databus) to[bend left=5] node[midway,above,sloped] {$DATA\_TRANS[MEM\_ID]$} (datafifomem);
+
+  \draw[to] (cmgr) to[bend left=5] node[midway,above,sloped] {$MEM\_READ$} (mem);
+  \draw[to] (cmgr) to[bend right=5] node[midway,below,sloped] {$MEM\_WRITE$} (mem);
+  \draw[to] (datafifomem) to[bend right=5] node[midway,above,sloped] {$DATA\_IN[MEM\_ID]$} (cmgr);
+  \draw[to] (cmgr) to[bend right=5] node[midway,below,sloped] {$DATA\_OUT[MEM\_ID]$} (datafifomem);
+
+  \draw[to] (querybus) to[bend left=15] node[midway,above,sloped]
+  {$QUERY\_BROADCAST$} (queryfifomgr);
+
+  \draw[to] (queryfifomgr) to[bend right=5] node[midway,below,sloped]
+  {$QUERY\_IN[MGR\_IN]$} (cmgr);
+
+  \draw[to] (mem) to[bend right=5] node[midway,above,sloped] {$DATA\_OUT[MEM\_ID]$} (datafifomem);
+\end{tikzpicture}

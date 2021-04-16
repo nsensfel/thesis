@@ -1,0 +1,40 @@
+\begin{tabular}{|l||c|c|c|c|}
+ \hline
+
+ \textbf{Location}
+ & \textbf{request\_files!}
+ & \textbf{done?}
+ & \textbf{err}
+ & \textbf{new\_file?}
+ \\
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ $S_0$
+
+ & $fetched := 0$, $S_1$
+ & \disablecell{}
+ & $S_E$
+ & \disablecell{}
+ \\
+ \hline
+
+ $S_1$
+
+ & \disablecell{}
+ & $S_0$
+ & $S_E$
+ & $fetched := fetched + 1$
+ \\
+ \hline
+ $S_E$
+
+ & \disablecell{}
+ & \disablecell{}
+ & \disablecell{}
+ & \disablecell{}
+ \\
+ \hline
+\end{tabular}%

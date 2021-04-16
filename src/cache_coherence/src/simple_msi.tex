@@ -1,0 +1,93 @@
+\subsection{Introduction to the MSI Protocol}
+\label{sec:intro_to_msi}
+The archetypal cache coherence protocols are those belonging to the MSI
+protocol family. In their basic version, these protocols feature three stable
+states from which the MSI name is derived:
+\begin{itemize}
+\item \textbf{Modified:}
+When a cache assigns the Modified state to a memory element, it indicates that
+this cache performed at least one write to that memory element. While in this
+state, it can freely read and write to that memory element. This corresponds
+to being the \textit{Single Writer} from Property~\ref{prop:swmr}.
+
+\item \textbf{Shared:}
+When a cache assigns the Shared state to a memory element, it indicates that
+this cache is able to freely read that memory element but not write to it. This
+corresponds to being one of the \textit{Multiple Readers} (and potentially the
+only one) of Property~\ref{prop:swmr}.
+
+\item \textbf{Invalid:}
+When a cache assigns the Invalid state to a memory element, it is no longer
+considered to be holding a copy of that memory element, thus absolving this
+cache from verifying Property~\ref{prop:system_wide_value}. Not having a copy,
+the cache can neither read nor write to the memory element.
+\end{itemize}
+
+\stopallthesefloats
+\begin{figure}
+   \begin{center}
+   \begin{subfigure}[b]{0.7\linewidth}
+      \input{\chapterdirectory/figure/general_msi_cc}
+      \caption{Cache}
+      \label{fig:general_msi_cc}
+   \end{subfigure}
+   \\
+   \begin{subfigure}[b]{0.5\linewidth}
+      \input{\chapterdirectory/figure/general_msi_cmgr}
+      \caption{Coherence Manager}
+      \label{fig:general_msi_cmgr}
+   \end{subfigure}
+   \begin{subfigure}[b]{0.3\linewidth}
+      \input{\chapterdirectory/figure/general_msi_cpu}
+      \caption{Core}
+      \label{fig:general_msi_cpu}
+   \end{subfigure}
+   \end{center}
+   \caption{Overview of the MSI Protocol}
+   \label{fig:general_msi}
+\end{figure}
+
+To keep it simple, the protocol presented in this section does not use any FIFO
+queue. Instead, all exchanges are done synchronously. The only elements taken
+into account are the state of the memory elements and the points of
+synchronization (i.e. instruction and message exchanges). Thus, the notations
+on the automata of this section are not the notations presented in the previous
+section, but are instead based on CCS (Calculus of Communicating Systems,
+\cite{10.5555/539036}): a \texttt{?} marks the reception of a signal, and
+\texttt{!} marks its sending.  Queries are still sent to all components, and
+data only to a single one.  Furthermore, only a single transaction (that is,
+the resolution of an instruction) can occur at any
+moment. This is reflected by transitions featuring multiple synchronizations,
+as no other actions would be permitted to be interleaved.
+
+Figure~\ref{fig:general_msi} shows the two automata corresponding to this
+simplified protocol. Each of these automata pertains to a single memory element,
+with states corresponding to what the component attributes to that memory
+element.
+
+In the case of the coherence manager (Figure~\ref{fig:general_msi_cmgr}), the
+two states simply correspond to whether or not the coherence manager is in
+charge of providing the current value for that memory element: \texttt{M}
+indicates that one of the caches is currently in the \texttt{M} state, meaning
+that the value stored in the system's main memory may be out of date; \texttt{I}
+indicates that the main memory's value for that element is up-to-date, leaving
+(in the MSI protocol) the coherence manager in charge of propagating copies
+as the caches demand them.
+
+\begin{example}[Simple MSI Transition]
+\label{ex:general_msi_single_store}
+Consider a system with two caches, $C_A$ and $C_B$, and a single memory
+element $E$, such that, initially, $C_A$ holds no copy of $E$ (\texttt{I}
+state) and $C_B$ holds one in the \texttt{S} state, the coherence manager
+has the \texttt{I} state assigned to $E$. Were $C_A$ to receive a \storeinstr{}
+request, it would broadcast a \getmquery{} to itself, $C_B$, and the coherence
+manager. Upon receiving the \getmquery{}, $C_B$ would have to abandon the
+\texttt{S} state for \texttt{I} in order to maintain Property~\ref{prop:swmr}.
+The coherence manager would react to receiving the \getmquery{} by sending a
+copy of $E$ from the system's main memory to $C_A$ (\simpledata!)
+before moving to \texttt{M} so as to memorize that the most up-to-date value
+for $E$ is now held by $C_A$. This \simpledata{} reply allows $C_A$ to move to
+the \texttt{M} state, thus completing its transition.
+\end{example}
+
+

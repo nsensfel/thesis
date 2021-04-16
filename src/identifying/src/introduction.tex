@@ -1,0 +1,55 @@
+The first step toward the analysis and the control of interference caused by
+the use of cache coherence is to ensure that the mechanisms of cache coherence
+used on the targeted architecture are well understood.
+
+Chapter~\ref{cha:micro-benchs} presented papers on benchmark-based strategies to
+expand the information available on the architecture beyond what the
+documentation provides. That chapter was limited to performance (namely,
+execution time and bandwidth) analysis. In this chapter, benchmarks are used to
+clarify and expand the information available to the user about the architecture'
+cache coherence protocol.
+
+This chapter includes the results of applying this strategy to the NXP QorIQ
+T4240 architecture. This architecture is documented as implementing a MESI cache
+coherence protocol, and as able to perform \textit{cache intervention}. The
+application of the cache coherence protocol identification strategy on this
+architecture reveals a MESIF protocol. The work presented in this chapter has
+been published in \cite{ecrts20}.
+
+The identification strategy uses benchmarks to identify a cache coherence
+protocol by comparing them with the protocol the user believes it to be. In
+order to so, it is important to distinguish the following three notions:
+\begin{definition}[The Architecture's Coherence Protocol]
+The actual coherence protocol implemented by the architecture, which is the one
+the applicant needs to identify. It may not be directly observable.
+\end{definition}
+
+\begin{definition}[The Observed Coherence Protocol]
+The \textbf{observed} cache coherence protocol is the partial view of the
+architecture's coherence protocol that is observed by performing a given set of
+benchmarks. As these benchmarks cannot be exhaustive, the observed coherence
+protocol is potentially incomplete.
+\end{definition}
+
+\begin{definition}[The Hypothetical Coherence Protocol]
+The user believes the architecture to be implementing a certain protocol. This
+corresponds to the \textbf{hypothetical} cache coherence protocol. It originally
+comes from the user's understanding of the architecture's documentation.
+\end{definition}
+
+The purpose of the identification strategy is to show that the hypothetical
+protocol is indeed the architecture's cache coherence protocol. This
+verification is done by resolving the observed cache coherence protocol and
+analyzing it through comparison with the hypothetical protocol.
+
+The chapter starts by a presentation of the strategy itself, in an
+architecture-agnostic manner (Section~\ref{sec:identification:strategy}), then
+follows up with its application to the NXP QorIQ T4240 architecture:
+Section~\ref{sec:identification:implementation} presents how the benchmarks
+were implemented, Section~\ref{sec:identification:mesi} presents a hypothetical
+MESI protocol implementation, Section~\ref{sec:identification:application}
+shows the result of applying the strategy until the point where the protocol is
+found to be a mismatch, Section~\ref{sec:identification:mesif} presents a
+hypothetical MESIF protocol implementation, and
+Section~\ref{sec:identification:second_application} shows the results pointing
+out the slight discrepancies in implementation choices.

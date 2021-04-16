@@ -1,0 +1,126 @@
+\begin{tabular}{|l||c|c|c|c|c|}
+ \hline
+
+ \textbf{State}
+ & \multicolumn{4}{c|}{\textbf{Received Queries}}
+ & \textbf{Data Reply}
+ \\
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ & \getsquery{}
+ & \getmquery{}
+ & \putmquery{} (Owner)
+%   \begin{tabular}{@{}c@{}}
+%      \putmquery{}\\
+%      (Owner)
+%   \end{tabular}
+ & \putmquery{} (Other)
+%   \begin{tabular}{@{}c@{}}
+%      \putmquery{}\\
+%   \end{tabular}
+ & \simpledata{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{I}
+
+ % GetS
+ & \senddataact{\sendertarget}{\simpledata{}}
+
+ % GetM
+ &
+   \begin{tabular}{@{}c@{}}
+      \senddataact{\sendertarget}{\simpledata{}}\\
+      \storeowneract{}\\
+      \setstateact{\texttt{M}}
+   \end{tabular}
+
+ % PutM (owner)
+ & \noaction{}
+
+ % PutM (other)
+ & \noaction{}
+
+ % Data
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{I\textsuperscript{D}}
+
+ % GetS
+ & \stallact{}
+
+ % GetM
+ & \stallact{}
+
+ % PutM (owner)
+ & \disablecell{}
+
+ % PutM (other)
+ & \noaction{}
+
+ % Data
+ & \setstateact{\texttt{I}}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{I\textsuperscript{B}}
+
+ % GetS
+ &
+   \begin{tabular}{@{}c@{}}
+      \resetowneract{}\\
+      \senddataact{\sendertarget}{\simpledata{}}\\
+      \setstateact{\texttt{I}}
+   \end{tabular}
+
+ % GetM
+ &
+   \begin{tabular}{@{}c@{}}
+      \storeowneract{}\\
+      \senddataact{\sendertarget}{\simpledata{}}\\
+      \setstateact{\texttt{M}}
+   \end{tabular}
+
+ % PutM (owner)
+ & \begin{tabular}{@{}c@{}}
+      \resetowneract{}\\
+      \setstateact{\texttt{I}}
+   \end{tabular}
+
+ % PutM (other)
+ & \noaction{}
+
+ % Data
+ & \disablecell{}
+ \\
+ \hline
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \texttt{M}
+
+ % GetS
+ & \stallact{}
+
+ % GetM
+ & \stallact{}
+
+ % PutM (owner)
+ & \begin{tabular}{@{}c@{}}
+      \resetowneract{}\\
+      \setstateact{\texttt{I\textsuperscript{D}}}
+   \end{tabular}
+
+ % PutM (other)
+ & \noaction{}
+
+ % Data
+ & \setstateact{\texttt{I\textsuperscript{B}}}
+ \\
+ \hline
+
+\end{tabular}%

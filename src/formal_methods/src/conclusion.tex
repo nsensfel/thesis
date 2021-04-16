@@ -1,0 +1,21 @@
+\section{Conclusion}
+Timed automata can be used to model complex systems featuring real-time
+constraints. Through the use of queries verified using formal methods such as
+model checking, these models are then used to validate properties for the
+systems, such as ascerting its correct behavior or computing running time for
+some of its components.
+
+In the next chapter, cache coherence mechanics are described. The behavior of
+cache coherence protocols is defined using (classical) automata. Because of the
+large size of such automata, a matrix representation is used instead. In this
+representation, lines correspond to locations, and columns correspond to labels
+and guards. For example, the client automaton described in
+Figure~\ref{fig:classical_automata} would have the matrix
+representation shown in Figure~\ref{fig:matrix_example}.
+
+\begin{figure}[hbt!]
+   \centering
+   \input{\chapterdirectory/figure/matrix_example}
+   \caption{Example of matrix automaton representation}
+   \label{fig:matrix_example}
+\end{figure}

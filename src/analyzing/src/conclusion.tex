@@ -1,0 +1,37 @@
+\section{Conclusion}
+This chapter has shown how UPPAAL's model checking capabilities can be exploited
+to analyze the interference caused by cache coherence on the model from
+Chapter~\ref{cha:modeling_cache_coherence}.
+
+This analysis starts by a computation of the WCET for each program. Useful in
+itself, this analysis is extended by that of the WCET for these programs with
+the architecture in different configurations in order to extract more
+information about how much of the execution time is caused by interference.
+
+In order to more precisely understand what determine the WCET and to provide
+the user with information about elements of the program that can directly be
+manipulated, the analysis proceeds by an categorization of the accuracy of each
+instruction. This indicates which instructions are unaffected by the
+interference, which instructions are always time-consuming, and which
+instructions take a varying amount of time depending on the execution. By
+looking at the accuracy of all accesses made on each memory element, patterns
+for these instructions of varying execution time can sometimes be found, which
+results in a more predictable system.
+
+The determining factor for the accuracy of instructions is then properly
+defined. This corresponds to a categorization of all external queries depending
+on their effects on the permissions held by a cache, and whether a loss of
+permission led to an instruction taking additional time. Thus, three categories
+of interference are defined: minor (no change of permission, but loss of time
+due to query processing), demoting (loss of writing permission), and expelling
+(loss of all permissions).
+
+Finally, analyses are performed in order to determine how each instruction
+interfere with the other instructions. This results in a graph showing, for
+each instruction, which instruction can generate interference that will
+directly impact it, the category of this interference, and whether this
+interference occurs on all possible executions or not.
+
+This provides the user with a clear understanding of the causes and effects of
+cache coherence interference on the programs' instructions, opening the way to
+finding means of mitigation for this interference.

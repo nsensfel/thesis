@@ -1,0 +1,22 @@
+\tikzset{block/.style={fill=white,draw,rectangle,text centered, text width=#1}}
+\tikzset{sub/.style={fill=white,draw,rectangle,text centered, text width=#1, minimum height=2cm}}
+\tikzset{block/.default={draw,rectangle}}
+\tikzset{arc/.style={-latex}}
+\tikzset{bi/.style={latex-latex}}
+\tikzset{back/.style={latex-}}
+\tikzset{connect/.style={draw, circle, fill=black, scale=.3}}
+\tikzset{br/.style n args={2}{ below=#1 of #2, anchor= south west}}
+\tikzset{bl/.style n args={2}{ below=#1 of #2, anchor= south east}}
+\tikzset{ar/.style n args={2}{ above=#1 of #2.south east}}
+\tikzset{al/.style n args={2}{ above=#1 of #2.south west}}
+\tikzset{box/.style={fill=lightgray!25, draw, rectangle, dashed}}
+\tikzset{danger/.style={draw, text centered, regular polygon, regular polygon sides=3, label=center:{\textbf{!}}, thick}}
+
+\tikzset{com/.style={draw, ellipse, thick, text centered, text width=3cm}}
+\tikzset{conclusion/.style={draw=blue, rectangle, rounded corners, thick, text centered, text width=5cm}}
+\tikzset{evidences/.style={draw=blue, rectangle, rounded corners,  fill=blue!20, text color= white, thick, text centered}}
+\tikzset{strategy/.style={trapezium,trapezium left angle=60, trapezium right angle=120,draw, text centered}}
+\tikzset{softStrategy/.style={trapezium,draw, fill=yellow!20, text centered}}
+\tikzset{alternative/.style={diamond,draw, fill=black, label=right:{at least one}}}
+\tikzset{backing/.style={draw,  trapezium, trapezium left angle=60, trapezium right angle = 90}}
+

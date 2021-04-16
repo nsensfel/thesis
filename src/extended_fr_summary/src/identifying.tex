@@ -1,0 +1,261 @@
+\section{Identifier la coh\'erence de cache}
+\label{fr:sec:identify}
+Cette section présente la stratégie d'identification du protocole de cache
+implémenté par l'architecture choisie par l'applicant. Ces travaux ont fait
+l'objet d'une publication \cite{ecrts20}. Pour éviter les confusions, trois
+protocoles sont définis ci-dessous:
+
+\begin{definition}[Le protocole de l'architecture]
+Le protocole réellement implémenté sur l'architecture. Celui que l'applicant
+souhaite identifier. Il n'est probablement pas observable directement.
+\end{definition}
+
+\begin{definition}[Le protocole observé]
+Le protocole observé est la vue partielle du protocole de l'architecture
+obtenue à travers un ensemble de benchmarks. Puisqu'il n'est pas possible
+d'assurer que les benchmarks soient exhaustifs, le protocole
+observé est potentiellement incomplet.
+\end{definition}
+
+\begin{definition}[Le protocole hypothétique]
+  Le protocole défini par l'applicant et qui correspond à ce qu'il
+  s'attend à trouver d'après la documentation de l'architecture.
+\end{definition}
+
+Pour rappel, les protocoles de cache sont definis autour d'un seul
+élément mémoire. En conséquent, la stratégie que nous proposons ne
+considère qu'un seul élément mémoire. De plus, on suppose que
+les états stables du protocole de l'architecture sont observables.
+
+\subsection{Définir le protocole hypothétique}
+La première étape de cette stratégie d'identification est la définition du
+protocole hypothétique par l'applicant. Cette définition devrait utiliser
+les notations présentées dans la Section~\ref{fr:sec:cache_coherence}. Un bon
+point de départ est de se référer à la documentation de l'architecture.
+Par exemple, pour le NXP QorIQ T4240, la documentation indique un protocole
+MESI (dans \cite{e6500}), avec des optimisations pour le partage de données déjà
+en cache (dans \cite{T4240}).
+
+\subsection{Exploration naïve du protocole observable}
+Pour définir le protocole observable, on effectue une exploration des états
+accessibles. L'algorithme correspondant à cette exploration se trouve dans
+la Figure~\ref{fr:fig:identification:state_exploration}. En commençant dans un
+état où aucun cache ne contient la donnée ($\emph{init}$), on explore les états
+accessibles par l'application d'une unique instruction à la fois, en notant
+l'état de cohérence du système une fois l'instruction complétée, ainsi que les
+valeurs des différents moniteurs de performance. Les étapes du protocole
+correspondant à \lstinline!state_search!, \lstinline!decode! et
+\lstinline!monitors! sont détaillées par la suite.
+
+\begin{figure}[hbt!]
+\lstset{%
+   escapeinside={(*}{*)},%
+   keywordstyle=\bfseries,%
+   morekeywords={while,let,in,if,then,else,def,foreach},%
+   numbers=none%
+}
+\begin{lstlisting}
+init_state_search()
+init_decode()
+
+DstStates (*$ \gets \{\emph{init}\}$*)
+WaitList (*$ \gets \{\emph{init}\}$*)
+while (WaitList (*$\neq \emptyset$*)):
+   SrcState(*$~\in~\!\!$*)WaitList;
+   WaitList (*$\gets$*)WaitList \ SrcState;
+   foreach k (*$\in$*) 1..(*$\cachecount{}$*)
+         foreach instr(*$~\in\{load, store, evict\}$*)
+               SysInstruction (*$\gets$*) single_instruction_on(instr, k)
+               (*$\langle{}$*)DstState, PerformanceCounters(*$\rangle{} \gets \benchmark{}$*)(SrcState, SysInstruction)
+
+               handle_state_search(SrcState, SysInstruction, DstState) // Step 1
+               handle_decode(SrcState, SysInstruction, DstState) // Step 2
+               handle_monitors(SrcState, SysInstruction, PerformanceCounters) // Step 3
+
+               if DstState (*$\not\in$*) DstStates
+                  DstStates (*$\gets$*) DstStates (*$\cup~\{$*)DstState(*$\}$*)
+                  WaitList (*$\gets$*) WaitList (*$\cup~\{$*)DstState(*$\}$*)
+\end{lstlisting}
+\caption{General State Exploration Algorithm}
+\label{fr:fig:identification:state_exploration}
+\end{figure}
+
+La fonction \lstinline!benchmark! retourne l'état de cohérence des différents
+composants du système (caches et gestionnaire de cohérence). Dans le cas où le
+gestionnaire de cohérence n'est pas observable, on considère qu'il suit les
+règles du protocole hypothétique et on définit le protocole observé comme s'il
+comportait le même gestionnaire de cohérence.
+
+\subsection{Exploration d'état et atteignabilité}
+L'étape \lstinline!state_search! catalogue les états stables de cohérence
+observable dans chaque composant $\validarchboolflags{}$, ainsi que leurs
+combinaisons à l'échelle du système (c'est-à-dire l'état de cohérence du
+système) \obssystemstate{}.
+
+\lstset{%
+   escapeinside={(*}{*)},%
+   keywordstyle=\bfseries,%
+   morekeywords={while,let,in,if,then,else,def,foreach},%
+   numbers=none%
+}
+\begin{lstlisting}
+def init_state_search ()
+   (*$\validarchboolflags{} \gets$*) tuple_to_set((*$\emph{init}$*))
+   (*$\obssystemstate{} \gets \{\emph{init}\}$*)
+
+def handle_state_search (SrcState, SysInstruction, DstState)
+   (*$\obsreachfun{}$*)(SrcState, SysInstruction) (*$\gets$*) {DstState}
+   if DstState (*$\not\in \obssystemstate{}$*)
+      (*$\validarchboolflags{} \gets \validarchboolflags{} \cup \{$*)tuple_to_set(DstState)(*$\}$*)
+      (*$\obssystemstate{} \gets \obssystemstate{} \cup \{$*)DstState(*$\}$*)
+\end{lstlisting}
+
+On récupère en fait le graphe de transition des états de cohérence du système.
+
+
+\subsection{Correspondance entre état observé et hypothétique}
+Les états et transitions observés lors de l'étape précédente sont
+ensuite comparés avec ceux attendus avec le protocole hypothétique. On
+associe alors les états de ces deux protocoles en définissant
+$\decodefun$, la relation qui permet de passer d'état observé à état
+hypothétique. Pour cela, on a besoin de $\hypreachfun{}$, qui
+correspond au graphe de transition d'états stables pour le protocole
+hypothétique.
+
+\lstset{%
+      escapeinside={(*}{*)},%
+      keywordstyle=\bfseries,%
+      morekeywords={while,let,in,if,then,else,def,foreach},%
+      numbers=none%
+   }
+\begin{lstlisting}
+def init_decode ()
+   (*$\decodefun \gets \langle init, <I, \ldots, I> \rangle$*)
+
+def handle_decode (SrcState, SysInstruction, DstState)
+   (*$\langle$*)SrcState, DecodedSrcState(*$\rangle \in \decodefun$*)
+   {DecodedDstState} (*$\gets$ $\hypreachfun{}$*)(DecodedSrcState, SysInstruction)
+   (*$\decodefun \gets \decodefun \cup \{\langle$*)DstState, DecodedDstState(*$\rangle\}$*)
+\end{lstlisting}
+
+Il est possible que plusieurs états observés soient associés au même état
+hypothétique. En effet, lorsque l'on observe l'état d'une ligne de cache, il est
+possible qu'une partie de l'information ne soit pas liée à la cohérence de
+cache. En conséquent, plusieurs états observés peuvent en fait correspondre au
+même état de cohérence.
+
+Cependant, si le protocole hypothétique correspond effectivement au
+protocole de l'architecture, alors il ne doit pas y avoir d'état
+observé associé à plusieurs états hypothétiques. En effet,
+cela indiquerait que certains comportements du protocole hypothétique
+sont absents de l'architecture. Il en est de même si l'un des états
+hypothétiques n'est associé à aucun état observé. Si l'une de ces deux
+situations non souhaitées parvient, alors le protocole hypothétique
+est infirmé.
+
+
+\subsection{Comparaison des activités}
+Si le protocole hypothétique n'est pas infirmé lors de l'étape précédente, les
+activités observées sur l'architecture grâce aux moniteurs de performance sont
+comparées à celles attendues d'après le protocole hypothétique. Pour cela, l'applicant note le nombre d'événements observés lors de chaque benchmark dans
+\archmonitorval{}.
+
+\lstset{%
+   escapeinside={(*}{*)},%
+   keywordstyle=\bfseries,%
+   morekeywords={while,let,in,if,then,else,def,foreach},%
+   numbers=none%
+}
+\begin{lstlisting}
+def handle_monitors(SrcState, SysInstruction, PerformanceCounters)
+   (*\archmonitorval{}*)(SrcState, SysInstruction) (*$\gets$*) PerformanceCounters
+\end{lstlisting}
+
+Les résultats obtenus dans \archmonitorval{} doivent correspondre à ce que le
+protocole hypothétique génère. Toute exception doit être étudiée, car
+elle pourrait indiquer une différence significative entre les deux protocoles.
+De plus, si certains états observés n'agissent pas de la même façon vis-à-vis
+d'événements de cohérence alors qu'ils sont associés au même état théorique,
+alors les deux protocoles ne se correspondent pas. En effet, le protocole
+implémenté a dans ce cas plus d'états stables de cohérence que le protocole
+hypothétique.
+
+Si, à la fin de cette étape, le protocole hypothétique n'a pas été contredit
+par les observations, alors le protocole hypothétique décrit tous les
+comportements du protocole observé. Pour s'assurer que le protocole de
+l'architecture implémente tous les comportements du protocole hypothétique,
+l'étape suivante fait une exploration guidée par le protocole hypothétique.
+
+\subsection{Exploration guidée par le protocole hypothétique}
+\begin{definition}[Chemin de changement d'état stable]
+\label{fr:def:stable_state_change_path}
+Un chemin de changement d'état stable est un chemin entre deux états stables
+de la partie ``contrôleur de cache'' du protocole. Il est formé d'un état stable
+suivi d'une séquence d'états transitoires et termine par un état stable, avec
+une transition du protocole entre chaque état. Les deux états stables
+peuvent être les mêmes. Les transitions sans actions ne sont pas permises.
+\end{definition}
+
+Cette étape du processus d'identification s'assure que tous les comportements
+du protocole hypothétique sont présents sur l'architecture. Elle repose sur
+l'établissement de la liste exhaustive des chemins de changement d'états stables
+(voir Définition~\ref{fr:def:stable_state_change_path}), qui peut être générée
+automatiquement par un outil fourni dans le cadre de cette thèse.
+
+
+L'idée générale est simple: reproduire la séquence de chacun de ces chemins sur
+l'architecture afin de s'assurer que les activités observées sur l'architecture
+correspondent à celles attendues. Cependant, l'implémentation de ces benchmarks
+est beaucoup plus difficile que pour les étapes précédentes, puisque les
+transitions doivent être faites dans un ordre précis. Comparé aux étapes
+précédentes:
+\begin{itemize}
+    \setlength{\itemsep}{0pt}%
+   \setlength{\parskip}{0pt}%
+\item Plusieurs instructions peuvent être appliquées simultanément
+  (sur différents cœurs) afin de générer la séquence désirée. De
+  plus, les benchmarks peuvent comporter des séquences d'instructions,
+  au lieu d'une seule par cache.
+\item
+   L'analyse est concentrée sur un seul cache et non l'ensemble du système. À la
+   place, les autres caches sont utilisés pour causer les bonnes transitions.
+ \item L'exploration n'est pas aveugle: l'espace d'états est
+   maintenant connu. La difficulté repose sur l'obtention de
+   la séquence souhaitée sur l'architecture.
+\end{itemize}
+
+Une fois cette exploration terminée, si tous les comportements du protocole
+hypothétique ont correctement été observés, alors le protocole de
+l'architecture est garanti de tous les implémenter. Combiné avec les résultats
+montrant que le protocole hypothétique décrit correctement le protocole
+observé, on peut conclure que cette stratégie d'identification a fourni une
+bonne compréhension du protocole implémenté par l'architecture à l'applicant.
+
+\subsection{Application au NXP QorIQ T4240}
+L'application de cette stratégie sur le NXP QorIQ T4240 a révélé des résultats
+intéressants. En effet, tenter de valider un protocole hypothétique MESI révèle
+un seul état de cohérence observé pour chaque état de cohérence hypothétique,
+sauf pour l'état hypothétique \texttt{S}, qui est associé à deux états observés
+(\benchs{} et \benchx{}).
+
+\begin{figure}[hbt!]
+\begin{center}
+\input{\chapterdirectory/figure/unexpected_behaviors.tex}
+\end{center}
+\caption{Anomalies pour les états \benchs{} et \benchx{}}
+\label{fr:fig:unexpected_behaviors}
+\end{figure}
+
+Bien qu'avoir deux états observés pour un même état hypothétique ne soit pas
+suffisant pour contredire le protocole hypothétique, la suite du processus
+d'identification a révélé que ces deux états observés sont différents du point
+de vue de la cohérence de cache. En effet, comme montré dans la
+Figure~\ref{fr:fig:unexpected_behaviors}, les états observés \benchs{} et
+\benchx{} réagissent de manière différente à une demande provenant d'un autre
+cache: l'état \benchs{} entraine une réponse à la demande de la part du cache,
+alors que l'état \benchx{} ne répond pas. Le comportement attendu pour un état
+hypothétique \texttt{S} est de ne pas répondre. Ainsi, les observations montrent
+que l'architecture a un état stable supplémentaire et n'utilise donc pas un
+protocole MESI. Cette état supplémentaire semble correspondre au \texttt{F} d'un
+protocole MESIF et, après une seconde application de la stratégie
+d'identification du protocole, cela s'est confirmé.

@@ -1,0 +1,28 @@
+for(i=0; i<NMEAS; i++){
+   flush_caches();
+   sync();
+   time();
+   meas_loop(OPERATION, NBYTES, GAP);
+   time();
+}
+
+#define __asm_write_loop_gap64 \
+	__asm_meas_init \
+	\
+	"mr 		__addr, %0; \
+	\
+	1: \
+	stb		__wr_val, 0x000(__addr); \
+	stb		__wr_val, 0x040(__addr); \
+	stb		__wr_val, 0x080(__addr); \
+	stb		__wr_val, 0x0c0(__addr); \
+	stb		__wr_val, 0x100(__addr); \
+	stb		__wr_val, 0x140(__addr); \
+	stb		__wr_val, 0x180(__addr); \
+	stb		__wr_val, 0x1c0(__addr); \
+	add.		__addr, __addr, __gap; \
+	cmpw		7, __nbytes, __addr; \
+	bgt		7, 1b;" \
+	\
+	__asm_meas_clean
+

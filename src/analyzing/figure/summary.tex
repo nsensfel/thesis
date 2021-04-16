@@ -1,0 +1,147 @@
+
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,  semithick, node distance=0.5cm]
+\tikzstyle{section} = [state, rectangle, fill=gray!20]
+\tikzstyle{result} = [state, rectangle, rounded corners]
+\tikzstyle{auxresult} = [state,rectangle,draw=white]
+\tikzstyle{input} = [state,rectangle, draw=blue, thick, fill=blue!20, align=center, rounded corners, minimum height=2em]
+\tikzstyle{interresult} = [state, rectangle,dashed, rounded corners]
+
+\node[section] (WCETANA)
+   {
+      \begin{tabular}{@{}c@{}}
+         WCET\\
+         Analysis\\
+         (Section~\ref{sec:analysis:wcet})
+      \end{tabular}
+   };
+
+
+\node[auxresult] (SLOWFACTOR) [above right=of WCETANA,yshift=-20pt]
+   {
+      \begin{tabular}{@{}c@{}}
+         Slowdown\\
+         Factors
+      \end{tabular}
+   };
+
+\node[result] (PROGWCET) [below right=of WCETANA,yshift=20pt]
+   {
+      \begin{tabular}{@{}c@{}}
+         WCET of\\
+         Programs
+      \end{tabular}
+   };
+
+
+\node[interresult,node distance=2cm] (NOSHAREDWCET) [below =of WCETANA]
+   {
+      \begin{tabular}{@{}c@{}}
+         Without Shared\\
+         Variables
+      \end{tabular}
+   };
+
+\node[result] (IMPACTWCET) [xshift=-1cm,yshift=-0.5cm, below right =of NOSHAREDWCET]
+   {
+      \begin{tabular}{@{}c@{}}
+         Impact of\\
+         Interference\\
+         on WCET
+      \end{tabular}
+   };
+
+\node[section,node distance=4cm] (HITMISSANA) [right =of WCETANA]
+   {
+      \begin{tabular}{@{}c@{}}
+         Hit \& Miss\\
+         Analysis\\
+         (Section~\ref{sec:analysis:hit_and_miss})
+      \end{tabular}
+   };
+
+\node[input] (PARAMEDMODEL) [above =of HITMISSANA]
+   {
+      \begin{tabular}{@{}c@{}}
+         Instantiated\\
+         Model
+      \end{tabular}
+   };
+
+\node[result] (INSTRACCU) [below left =of HITMISSANA,xshift=1cm]
+   {
+      \begin{tabular}{@{}c@{}}
+         Instruction\\
+         Accuracy
+      \end{tabular}
+   };
+
+\node[auxresult] (MEMEACCU) [below right =of HITMISSANA,xshift=-1cm]
+   {
+      \begin{tabular}{@{}c@{}}
+         Mem. Element\\
+         Accuracy
+      \end{tabular}
+   };
+
+
+\node[section] (INTERCAT) [right =of HITMISSANA,xshift=2.5cm]
+   {
+      \begin{tabular}{@{}c@{}}
+         Interference\\
+         Categorization\\
+         (Section~\ref{sec:analysis:exposing_interference})
+      \end{tabular}
+   };
+
+\node[input] (PROTOCOL) [above =of INTERCAT]
+   {
+      \begin{tabular}{@{}c@{}}
+         Cache Coherence\\
+         Protocol
+      \end{tabular}
+   };
+
+\node[interresult] (ANOTPROTO) [below =of INTERCAT]
+   {
+      \begin{tabular}{@{}c@{}}
+         Annotated\\
+         Protocol
+      \end{tabular}
+   };
+
+\node[section] (INSTRIMPA) [below =of ANOTPROTO,xshift=-0.5cm]
+   {
+      \begin{tabular}{@{}c@{}}
+         Instruction Impact\\
+         Analysis\\
+         (Section~\ref{sec:analysis:missing_link})
+      \end{tabular}
+   };
+
+\node[result] (RELINSTRINTER) [below =of INSTRIMPA]
+   {
+      \begin{tabular}{@{}c@{}}
+         Relation Between\\
+         Instruction \&\\
+         Interference
+      \end{tabular}
+   };
+
+\path[draw,->] (PARAMEDMODEL) -| (WCETANA);
+\path[draw,->] ([yshift=-30pt]WCETANA) -- (PROGWCET);
+\path[draw,->] ([yshift=30pt]WCETANA) -- (SLOWFACTOR);
+
+\path[draw,->] (PARAMEDMODEL) -- (HITMISSANA);
+\path[draw,->] (HITMISSANA) -- (INSTRACCU);
+\path[draw,->] (HITMISSANA) -- (MEMEACCU);
+
+\path[draw,->] (PROTOCOL) -- (INTERCAT);
+\path[draw,->] (INTERCAT) -- (ANOTPROTO);
+\path[draw,->] (ANOTPROTO) -- (INSTRIMPA);
+\path[draw,->] (PARAMEDMODEL) -| ([xshift=10pt]INSTRIMPA.north west);
+\path[draw,->] (INSTRIMPA) -- (RELINSTRINTER);
+
+\path[draw,->] ([xshift=-20pt]WCETANA) -- ([xshift=-20pt]NOSHAREDWCET);
+\path[draw,->] (PROGWCET) -- (IMPACTWCET);
+\path[draw,->] (NOSHAREDWCET) -- (IMPACTWCET);
+\end{tikzpicture}

@@ -1,0 +1,23 @@
+\chapter{(Timed) Automata}
+\label{cha:formal_methods}
+\label{cha:timed_automata}
+\definechapterdirectory{src/formal_methods}
+This chapter presents the concept of timed automata, which is the formal model
+used in this thesis, and an associated formal method: reachability analysis
+through model checking. In the first section, the main concepts behind
+classical automata are introduced, with some fairly common additions: the use
+of variables, having conditions and actions in transitions, and
+synchronization. A definition of the temporal logic operators used in this
+thesis is also given in the classical automata section. Timed automata are
+introduced in a second section. As this thesis does not dwell into the theory
+of automata, but simply uses them as a modeling tool, many details (such as
+their precise semantics, the language theory or the details of how model
+checking is achieved) are omitted.  Indeed, the objective of the chapter is for
+the reader to have an understanding of the models of cache coherence presented
+in later chapters, as well as the operators being used to query on them. Since
+the aforementioned details are not directly related to the work presented in
+this thesis, they are considered to be outside of the scope of this chapter.
+
+\input{\chapterdirectory/src/classical_automata.tex}
+\input{\chapterdirectory/src/timed_automata.tex}
+\input{\chapterdirectory/src/conclusion.tex}

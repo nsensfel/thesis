@@ -1,0 +1,74 @@
+\begin{tikzpicture}[
+  font=\sffamily,
+  every matrix/.style={ampersand replacement=\&,column sep=0.5cm,row sep=1cm},
+  source/.style={draw,thick,rounded corners,fill=yellow!20,inner sep=.3cm},
+  process/.style={draw,thick,circle,fill=blue!20},
+  sink/.style={source,fill=green!20},
+  datastore/.style={draw,very thick,shape=datastore,inner sep=.3cm},
+  dots/.style={gray,scale=2},
+  to/.style={->,>=stealth',shorten >=1pt,semithick,font=\sffamily\footnotesize},
+  every node/.style={align=center}]
+
+  % Position the nodes using a matrix layout
+  \matrix{
+    \node[source] (architecture) {Architecture};
+      \& \node[process] (identification) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\
+            Identification
+         \end{tabular}
+         };
+      \&
+      \iffalse
+         \node[sink] (interchan) {
+            \begin{tabular}{@{}c@{}}
+               Cache Coherence\\
+               Channels
+            \end{tabular}
+         };
+      \fi
+      \&
+      \\
+    \node[process] (benchmarking) {Benchmarking};
+    \& \node[sink] (cacheprotocol) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\ Protocol
+         \end{tabular}
+         };
+    \& \node[process] (uppaal) {UPPAAL Analysis};
+    \& \node[source] (application) {Application};
+    \\
+    \node[sink] (cacheperformance) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\
+            Performance
+         \end{tabular}
+      };
+    \& \& \node[sink] (coherenceeffect) {%
+         \begin{tabular}{@{}c@{}}
+            Cache Coherence\\
+            Impact
+         \end{tabular}
+      };
+    \& \\
+  };
+
+  % Draw the arrows between the nodes and label them.
+  \draw[to] (architecture) to (identification);
+  \draw[to] (architecture) to (benchmarking);
+
+  \draw[to] (architecture) to[bend right=5] (uppaal);
+
+  \draw[to] (identification) to (cacheprotocol);
+%  \draw[to] (identification) to (interchan);
+
+  \draw[to] (benchmarking) to (cacheperformance);
+
+  \draw[to] (cacheperformance) to (uppaal);
+  \draw[to] (cacheprotocol) to (uppaal);
+  \draw[to] (cacheprotocol) to (benchmarking);
+%  \draw[to] (interchan) to (uppaal);
+
+  \draw[to] (application) to (uppaal);
+  \draw[to] (uppaal) to (coherenceeffect);
+\end{tikzpicture}

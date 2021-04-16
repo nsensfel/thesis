@@ -1,0 +1,31 @@
+
+\ifdefined\standalone
+\documentclass{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,backgrounds,positioning,calc, automata, shadows, backgrounds,fit, arrows,graphs, trees, decorations.pathreplacing, patterns}
+\usepackage{forest}
+\usepackage{hyperref}
+\usepackage{varwidth}
+\input{tikzStyle}
+
+\begin{document}
+          \resizebox{930 px}{!}{\fi\begin{forest}
+	for tree = { edge = {latex-}, parent anchor=south, child anchor=north, l sep+=.5em, s sep+= 1em },
+	[{(RU3) Identification of interference and verified means of mitigation}, conclusion,  s sep-= 1.25em, calign=first,  
+			[{(E1) Design of adequate means of mitigation for interference}, conclusion,  s sep-= 1.25em, calign=first,  
+				[{(W2) Check all identified interference are mitigated ($\forall i \in \mathcal{I}$, $i$ mitigated)}, strategy, 
+					[{(E2) Classification of interference effects $( \forall i \in \mathcal{I}, c(i))$}, conclusion,  s sep-= 1.25em, calign=first,  
+						[{(W3) Safety analysis}, strategy, 
+							[{(E4) Identification of all interference $\mathcal{I}$ \\ Given: Configuration settings $\mathcal{C}s$ }, conclusion, ] 
+							[{(E5) Identification of $i$ effects }, conclusion, ] 
+							[{(G3) Configuration settings $\mathcal{C}s$ and temporal constraints on applications (e.g. WCET)  }, conclusion,  , dashed ] 
+						]
+						[{Architecture mastery}, backing, no edge]
+					]
+					[{(E3) $i$ mitigated\\(e.g. prevention / blocking with run-time mechanism; impossible due to usage domain restriction; tolerance) }, conclusion, ] 
+				]
+			]
+	]
+\end{forest}\ifdefined\standalone}\end{document}
+\fi

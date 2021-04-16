@@ -1,0 +1,1239 @@
+\section{Classical Automata}
+This section is meant as a reminder on classical automata. Readers looking for
+in-depth information on the subject are encouraged to read \cite{arnold},
+\cite{hopcroft}, or \cite{Schnoebelen:10.5555/1965314}.
+
+\subsection{System Definition}
+
+\begin{definition}[Syntax of Constraints and Actions]
+\label{def:formal_methods:transition_grammar}
+Given a set of variables \automatavariables{}, the grammar used when writing
+constraints and actions in transitions is as follows, with \textbf{ident}
+standing for a variable in \automatavariables{}:\\
+$\textbf{lop} ::= \land~|~\lor $\\
+$\textbf{cop} ::=\!\!\! ~< | \le | = | \ge | > $\\
+$\textbf{mop} ::= + | - | * |~/$\\
+$\textbf{mexpr} ::=
+   \textbf{mexpr}~\textbf{mop}~\textbf{mexpr}
+   ~|~ \textbf{ident}
+   ~|~ \mathbb{Z}
+$\\
+$
+\textbf{abexpr} ::=
+   \textbf{mexpr}~\textbf{cop}~\textbf{mexpr}
+   ~|~ \texttt{true}
+   ~|~ \texttt{false}
+$\\
+$
+\textbf{bexpr} ::=
+   \neg \textbf{bexpr}
+   ~|~ \textbf{bexpr}~\textbf{lop}~\textbf{bexpr}
+   ~|~ \textbf{abexpr}
+$\\
+$
+\textbf{assign} ::=
+   \textbf{assign};~\textbf{assign}
+   ~|~ \textbf{ident}~:=~\textbf{mexpr}
+   ~|~ if~(\textbf{bexpr})~\{\textbf{assign}\}
+   ~|~ \texttt{nop}
+$
+\end{definition}
+
+\begin{definition}[Classical Automata System]
+A classical automata system \automatasystem{} is a tuple
+$\langle \automatastates{}, \allowbreak{}
+\automatainit{}, \allowbreak{}
+\automatacondlabels{}, \allowbreak{}
+\automatachanlabels{}, \allowbreak{}
+\automatavariables{}, \allowbreak{}
+\automataactionlabels{}, \allowbreak{}
+\automatarelations{}\rangle$ where:
+\begin{itemize}
+\item \automatastates{} is a finite set of states.
+\item \automatainit{} is the initial state ($\automatainit{} \in
+\automatastates{}$).
+\item \automatavariables{} is a finite set of integer variables, taking their value on a finite subset \automatavardomain{} of integers.
+\item
+   $\automatachanlabels{} = \automatachanlabels{}^{\alpha} \cup
+   \automatachanlabels{}^{\texttt{sync}}$ is a finite set of labels, with
+   $\automatachanlabels{}^{\texttt{sync}}$ corresponding to labels meant for
+   synchronization and $\automatachanlabels{}^{\alpha}$ being regular labels.
+   The labels in $\automatachanlabels{}^{\texttt{sync}}$ affixed by either `?'
+   or `!', with `?' denoting a reception on a ``channel'', and `!' an emission.
+\item
+   \automatacondlabels{} = \textbf{bexpr}(\automatavariables{}), as defined in
+   Definition~\ref{def:formal_methods:transition_grammar}.
+\item
+   \automataactionlabels{} = \textbf{assign}(\automatavariables{}), as defined
+   in Definition~\ref{def:formal_methods:transition_grammar}.
+\item
+   $\automatarelations{} \subseteq
+      \automatastates{}
+      \times \automatacondlabels{}
+      \times \automatachanlabels{}
+      \times \automataactionlabels{}
+      \times \automatastates{}
+   $ is the transition relation.
+ \end{itemize}
+ Note that we use both a set \automatastates{} of
+ states and a set \automatavariables{} of integer variables, in order
+ to be close to the framework of UPPAAL, which we are using in the
+ rest of the thesis.
+ 
+The semantics of \automatasystem{} is given via its set of valid
+transitions (see Definition~\ref{sec:system-definition}) and its
+execution traces (see Definition~\ref{def:formal_methods:trace}).
+\end{definition}
+
+\begin{definition}[Valuation]
+Valuations map variables to their value:
+$\automataenvironment{}:\automatavariables{} \to \automatavardomain$.
+Given a valuation $\automataenvironment{}$, and a guard
+$c \in \automatacondlabels{}$, we note $\automataenvironment{} \models_{PL} c$
+to indicate that $c$ is true under the valuation $v$.
+
+Similarly, given $a \in \automataactionlabels{}$, $v[a]$ denotes the valuation
+obtained from $v$ by the application of the action $a$, were all variables
+updated by $a$ have their new value and all other variables keep their previous
+value.
+\end{definition}
+
+
+\begin{definition}[Transition]
+  \label{sec:system-definition}
+Given an automaton
+$\automatasystem{} = \allowbreak{}
+\langle \automatastates{}, \allowbreak{}
+\automatainit{}, \allowbreak{}
+\automatacondlabels{}, \allowbreak{}
+\automatachanlabels{}, \allowbreak{}
+\automatavariables{}, \allowbreak{}
+\automataactionlabels{}, \allowbreak{}
+\automatarelations{}\rangle$, we define \automatanext{}, which
+indicates all valid transitions that can be performed from
+$\langle \automatastate{}, \automataenvironment{}\rangle$, with
+$s \in \automatastates{}$ and $\automataenvironment{}$ a valuation:
+$\automatanext{}(\langle \automatastate{}, \automataenvironment{}\rangle)
+\triangleq \{\langle \automatastate{}', \automataenvironment{}'\rangle
+|
+   \existsin{\langle \automatastate{}, c, l, a, \automatastate{}' \rangle}{\automatarelations{}}{%
+%      (o = \automatastate{})
+%      \land (d = \automatastate{}')
+      (\automataenvironment{} \models_{PL} c)
+      \land
+      \automataenvironment{}' = \automataenvironment{}[a]
+   }\}
+$
+\end{definition}
+
+\begin{definition}[Path \& Trace]
+\label{def:formal_methods:trace}
+We consider a path to be a \emph{maximal} sequence of
+states/transitions
+$\langle \automatastate{1}, \automataenvironment{1}\rangle
+\automatatransition{} \langle \automatastate{2},
+\automataenvironment{2}\rangle \automatatransition{} \cdots$ such that
+for each $i$,
+$\langle \automatastate{i+1}, \automataenvironment{i+1}\rangle \in
+\automatanext{}(\langle \automatastate{i},
+\automataenvironment{i}\rangle) $. The sequence is maximal in the
+sense that it is either infinite or of length $N$ and such that
+$\automatanext{}(\langle \automatastate{N},
+\automataenvironment{N}\rangle)$ is empty. A path
+starting from
+$ \langle \automatainit{}, \automataenvironment{0}\rangle$ (where
+\automataenvironment{0} is the initial valuation) is called a trace.
+\end{definition}
+
+\begin{figure}[hbt!]
+   \centering
+   \begin{tabular}{cc}
+   \input{\chapterdirectory/figure/classical_automata_new_a} &
+   \input{\chapterdirectory/figure/classical_automata_new_b}
+   \end{tabular}
+   \caption{Example of two classical automata}
+   \label{fig:classical_automata}
+\end{figure}
+
+\begin{example}[Classical Automata]
+\label{ex:classical_automata}
+Figure~\ref{fig:classical_automata} shows two automata modeling a client (on
+the left) that fetches a number of files from a server (on the right).  In this
+scenario, the system loops infinitely, with the client initiating a request for
+files (\textbf{request\_files}), and counting (\textit{fetched}) their arrival
+(\textbf{new\_file}) until the server indicates that all were transfered
+(\textbf{done}). On each request, the server sends exactly 386 files (as
+counted by \textit{sent}).
+\end{example}
+
+\begin{example}[Traces]
+Here are some examples of traces for the client automaton from
+Example~\ref{ex:classical_automata}:
+\begin{itemize}
+\item
+   $
+   \langle S_0, \{\langle \textit{fetched}, 0 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{err}}{} \allowbreak{}
+   \langle S_E, \{\langle \textit{fetched}, 0 \rangle\}\rangle
+   $
+\item
+   $
+   \langle S_0, \{\langle \textit{fetched}, 0 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{request\_files!}}{\textit{fetched} := 0} \allowbreak{}
+   \langle S_1, \{\langle \textit{fetched}, 0 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{err}}{} \allowbreak{}
+   \langle S_E, \{\langle \textit{fetched}, 0 \rangle\}\rangle
+   $
+\end{itemize}
+And for the server automaton:
+\begin{itemize}
+\item
+   $
+   \langle S_0, \{\langle \textit{sent}, 0 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{err}}{} \allowbreak{}
+   \langle S_E, \{\langle \textit{sent}, 0 \rangle\}\rangle
+   $
+\item
+   $
+   \langle S_0, \{\langle \textit{sent}, 0 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{request\_files?}}{\textit{sent} := 0} \allowbreak{}
+   \langle S_1, \{\langle \textit{sent}, 0 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{new\_file!}\\\textit{sent} < 386}{\textit{sent} := \textit{sent} + 1} \allowbreak{}
+   \langle S_1, \{\langle \textit{sent}, 1 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{new\_file!}\\\textit{sent} < 386}{\textit{sent} := \textit{sent} + 1} \allowbreak{} \allowbreak{}
+   \cdots
+   \automatatransitiontrace{\textbf{new\_file!}\\\textit{sent} < 386}{\textit{sent} := \textit{sent} + 1} \allowbreak{} \allowbreak{}
+   \langle S_1, \{\langle \textit{sent}, 386 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{done!}\\\textit{sent} = 386}{} \allowbreak{} \allowbreak{}
+   \langle S_0, \{\langle \textit{sent}, 386 \rangle\}\rangle \allowbreak{}
+   \automatatransitiontrace{\textbf{err}}{} \allowbreak{}
+   \langle S_E, \{\langle \textit{sent}, 386 \rangle\}\rangle
+   $
+\end{itemize}
+\end{example}
+
+\begin{definition}[Synchronized automata]
+Given \emph{n} automata
+$\automatasystem{}_i = \allowbreak{}
+\langle \automatastates{}_i, \allowbreak{}
+\automatainit{}_i, \allowbreak{}
+\automatacondlabels{}_i, \allowbreak{}
+\automatachanlabels{}_i, \allowbreak{}
+\automatavariables{}_i, \allowbreak{}
+\automataactionlabels{}_i, \allowbreak{}
+\automatarelations{}_i\rangle$, and a synchronization constraint
+$\automatasyncconstraint{} \subseteq (\automatachanlabels{}_1 \cup \{-\})
+\times \cdots \times (\automatachanlabels{}_n \cup \{-\})$, we can define a new automaton
+$\automatasystem{}_s = \allowbreak{}
+\langle \automatastates{}_s, \allowbreak{}
+\automatainit{}_s, \allowbreak{}
+\automatacondlabels{}_s, \allowbreak{}
+\automatachanlabels{}_s, \allowbreak{}
+\automatavariables{}_s, \allowbreak{}
+\automataactionlabels{}_s, \allowbreak{}
+\automatarelations{}\rangle$,
+corresponding to the synchronized product of the $\automatasystem{}_i$ automata
+according to \automatasyncconstraint{}, with the following rules:
+\begin{itemize}
+\item $\automatastates{}_s =
+   \automatastates{}_1 \times \cdots \times \automatastates{}_n$
+\item $\automatainit{}_s =
+   \langle{} \automatainit{}_1, \cdots, \automatainit{}_n\rangle{}$
+\item $\automatacondlabels{}_s =
+   \automatacondlabels{}_1 \times \cdots \times \automatacondlabels{}_n$
+\item $\automatachanlabels{}_s =
+(\automatachanlabels{}_1 \cup \{-\})
+\times \cdots \times (\automatachanlabels{}_n \cup \{-\})$. We extend the labels
+   with $-$ to mark that a sub-automaton does not perform any transition.
+\item $\automatavariables{}_s =
+   \automatavariables{}_1 \cup \cdots \cup \automatavariables{}_n$,
+   with $\forallin{i,j}{1..n}{(i \neq j) \implies (\automatavariables{}_i \cap \automatavariables{}_j = \emptyset)}$.
+\item $\automataactionlabels{}_s =
+   \automataactionlabels{}_1 \times \cdots \times \automataactionlabels{}_n$
+\item
+   $\automatarelations{}_s \subseteq
+      \automatastates{}_s
+      \times \automatacondlabels{}_s
+      \times \automatachanlabels{}_s
+      \times \automataactionlabels{}_s
+      \times \automatastates{}_s
+   $, with
+   $$
+   \langle
+      \langle o_1, \cdots, o_n \rangle,
+      \langle c_1, \cdots, c_n \rangle,
+      \langle l_1, \cdots, l_n \rangle,
+      \langle a_1, \cdots, a_n \rangle,
+      \langle d_1, \cdots, d_n \rangle
+   \rangle \in \automatarelations{}_s
+   $$
+   $$
+   \iff
+   \begin{cases}
+      \langle l_1, \cdots, l_n \rangle \in \automatasyncconstraint{}\\
+      \langle
+         \forall i \in 1..n :
+         o_i, c_i, l_i, a_i, d_i \rangle \in \automatarelations{}_i
+         \lor (o_i = d_i \land l_i = - \land c_i = \texttt{true} \land a_i =
+         \textit{nop})
+   \end{cases}
+   $$
+\end{itemize}
+\automatasyncconstraint{} is implicitely defined by the labels in
+$\automatachanlabels_{1..n}$: for any transition with a label in
+$\automatachanlabels^{\alpha}$, there is an entry in \automatasyncconstraint{}
+with no other simultaneous transition allowed (indicated by $-$, which means
+the particular sub-automaton does not perform a transition). For any transition
+$chan$ in $\automatachanlabels^{\texttt{sync}}$, \automatasyncconstraint{} has
+an entry for each possible $chan!$, $chan?$, $-$ label combination such that
+there is a single $chan!$ label and a single $chan?$ label. This convention was
+introduced in CCS (\cite{10.5555/539036}).
+\end{definition}
+
+\begin{definition}[Synchronized Automata Semantics]
+As the product of synchronized automata is itself a classical automaton, its
+semantics is the same as those from Definition~\ref{def:formal_methods:trace}.
+\end{definition}
+
+\iffalse
+\begin{definition}[Synchronized Automata Semantics]
+A valid transition for $\automatasystem{}_s$ is then defined as:
+$\automatanext{}(\langle \automatastate{}, \automataenvironment{}\rangle)
+\triangleq \{\langle \automatastate{}', \automataenvironment{}'\rangle
+|
+   \existsin{\langle \automatastate{}, c, l, a, \automatastate{}' \rangle}{%
+      \automatarelations{}_s}{%
+      (\llbracket{}c\rrbracket_{\automataenvironment{}} = true)
+      \land (\automataenvironment{}' = \llbracket{}a\rrbracket_{\automataenvironment{}})
+      \land l \in \automatasyncconstraint{}
+   }\}
+$
+\end{definition}
+\fi
+\begin{figure}[hbt!]
+   \centering
+   \input{\chapterdirectory/figure/classical_automata_synchronized}
+   \caption{Example of synchronized automaton}
+   \label{fig:classical_synchronized_automaton}
+\end{figure}
+
+\begin{example}
+Figure~\ref{fig:classical_automata} is in fact a network of automata, which is
+one way of representing synchronization between automata.
+Figure~\ref{fig:classical_synchronized_automaton} shows another representation,
+with a single automaton resulting from the synchronized product of the automata
+from Figure~\ref{fig:classical_automata}. In this case,
+\automatasyncconstraint{} is defined as:
+$\{
+   \langle \textbf{request\_files}!, \textbf{request\_files}? \rangle, \allowbreak{}
+   \langle \textbf{done}?, \textbf{done}! \rangle, \allowbreak{}
+   \langle \textbf{new\_file}?, \textbf{new\_file}! \rangle, \allowbreak{}
+   \langle \textbf{err}, - \rangle, \allowbreak{}
+   \langle -, \textbf{err} \rangle \allowbreak{}
+\}$.
+\end{example}
+
+\stopallthesefloats{}
+\subsection{Query Logic Operators and Semantics}
+\label{sec:automata_query_logic}
+Given an automaton \automatasystem{} and an initial valuation
+$\automataenvironment{0}$, we can define the satisfaction relation for a
+property $\phi$. We assume $\phi$ to be a formula in
+$\textbf{bexpr}(\automatavariables{})$
+written in the subset of CTL
+(\cite{10.1145/567067.567080}) temporal operators described below. Readers
+interested in the details of how these are actually verified are encouraged to
+read on model-checking (for example, \cite{clarke}).
+The satisfaction of
+$\langle \automatastate{}, \automataenvironment{} \rangle \models \phi$ is
+defined using the following decomposition:
+\iffalse
+\begin{description}
+\item[%
+   $
+      \langle
+         \automatainit{},
+         \automataenvironment{0}
+      \rangle{}
+      \models
+      \afop{}~\phi \triangleq
+   $]~~\\
+      For all paths starting from
+         $\langle
+            \automatainit{},
+            \automataenvironment{0}
+         \rangle$,
+         there is, within the path, a
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$,
+         such that
+         $
+         \automataenvironment{}'
+         \models_{PL} \phi
+         $
+\item[%
+   $
+      \langle
+         \automatainit{},
+         \automataenvironment{0}
+      \rangle{}
+      \models
+      \efop{}~\phi \triangleq
+   $]~~\\
+      There is a path starting from
+         $\langle
+            \automatainit{},
+            \automataenvironment{0}
+         \rangle$ in which is found a
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$,
+         such that
+         $
+         \automataenvironment{}'
+         \models_{PL} \phi
+         $
+\item[%
+   $
+      \langle
+         \automatainit{},
+         \automataenvironment{0}
+      \rangle{}
+      \models
+      \agop{}~\phi \triangleq
+   $]~~\\
+      For all paths starting from
+         $\langle
+            \automatainit{},
+            \automataenvironment{0}
+         \rangle$,
+         all
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$
+         of the path
+         verify
+         $
+         \automataenvironment{}'
+         \models_{PL} \phi
+         $
+\item[%
+   $
+      \langle
+         \automatainit{},
+         \automataenvironment{0}
+      \rangle{}
+      \models
+      \egop{}~\phi \triangleq
+   $]~~\\
+      There is a path starting from
+         $\langle
+            \automatainit{},
+            \automataenvironment{0}
+         \rangle$, such that all 
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$
+         verify
+         $
+         \automataenvironment{}'
+         \models_{PL} \phi
+         $
+\item[%
+   $
+      \langle
+         \automatainit{},
+         \automataenvironment{0}
+      \rangle{}
+      \models
+      \leadstoop{\phi}{\psi} \triangleq
+   $]~~\\
+      For any paths \pi starting from
+         $\langle
+            \automatainit{},
+            \automataenvironment{0}
+         \rangle$,
+         any suffix of \pi starting from a
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$
+         such that
+         $
+         \automataenvironment{}'
+         \models_{PL} \phi
+         $
+         also contains some
+         $\langle
+            \automatastate{}'',
+            \automataenvironment{}''
+         \rangle$
+         such that
+         $
+         \automataenvironment{}''
+         \models_{PL} \psi
+         $.\footnote{In CTL, this can also be defined as $\agop{}(\phi \implies
+         \afop{}~\psi)$}
+\end{description}
+\fi
+\begin{description}
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \psi
+      \triangleq
+   $]
+   $\automataenvironment{} \models_{PL} \psi$, where $\psi$ is an
+   expression in $\textbf{abexpr}(\automatavariables{})$.
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \neg \phi
+      \triangleq
+   $]
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \not\models
+      \phi
+   $
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \phi \land \psi
+      \triangleq
+   $]
+   $
+      (\langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \phi)
+   $
+   and
+   $(\langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \psi)
+   $
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \afop{}~\phi \triangleq
+   $]~~\\
+      For all paths starting from
+         $\langle
+            \automatastate{},
+            \automataenvironment{}
+         \rangle$,
+         there is, within the path, a
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$,
+         such that
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models~\phi
+         $
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \efop{}~\phi \triangleq
+   $]~~\\
+      There is a path starting from
+         $\langle
+            \automatastate{},
+            \automataenvironment{}
+         \rangle$ in which is found a
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$,
+         such that
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models~\phi
+         $
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \agop{}~\phi \triangleq
+   $]~~\\
+      For all paths starting from
+         $\langle
+            \automatastate{},
+            \automataenvironment{}
+         \rangle$,
+         all
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$
+         of the path
+         verify
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models~\phi
+         $
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \egop{}~\phi \triangleq
+   $]~~\\
+      There is a path starting from
+         $\langle
+            \automatastate{},
+            \automataenvironment{}
+         \rangle$, such that all
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$
+         verify
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models~\phi
+         $
+\item[%
+   $
+      \langle
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \leadstoop{\phi}{\psi} \triangleq
+   $]~~\\
+      For all paths starting from
+         $\langle
+            \automatastate{},
+            \automataenvironment{}
+         \rangle$,
+         any sub-path starting from a
+         $\langle
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle$
+         such that
+         $
+         \automataenvironment{}'
+         \models_{PL} \phi
+         $
+         also contains at least one
+         $\langle
+            \automatastate{}'',
+            \automataenvironment{}''
+         \rangle$
+         such that
+         $
+         \automataenvironment{}''
+         \models_{PL} \psi
+         $.
+\end{description}
+\iffalse
+\subsection{Reachability}
+\begin{description}
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \phi
+      \triangleq
+   $]
+   $\llbracket\phi\rrbracket_{\automataenvironment{}}$
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \axop{}~\phi \triangleq
+   $]~~\\
+   $
+      \forallin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models \phi
+      }
+   $
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \exop{}~\phi \triangleq
+   $]~~\\
+   $
+      \existsin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models \phi
+      }
+   $
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \afop{}~\phi \triangleq
+   $]~~\\
+   $
+      (
+         \langle
+            \automatasystem{},
+            \automatastate{},
+            \automataenvironment{}
+         \rangle{}
+         \models \phi
+      )
+      \lor
+      \forallin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models \afop{}~\phi
+      }
+   $
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \efop{}~\phi \triangleq
+   $]~~\\
+   $
+      (
+         \langle
+            \automatasystem{},
+            \automatastate{},
+            \automataenvironment{}
+         \rangle{}
+         \models \phi
+      )
+      \lor
+      \existsin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models \efop{}~\phi
+      }
+   $
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \agop{}~\phi \triangleq
+   $]~~\\
+   $
+      (
+         \langle
+            \automatasystem{},
+            \automatastate{},
+            \automataenvironment{}
+         \rangle{}
+         \models \phi
+      )
+      \land
+      \forallin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models \agop{}~\phi
+      }
+   $
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \egop{}~\phi \triangleq
+   $]~~\\
+   $
+      (
+         \langle
+            \automatasystem{},
+            \automatastate{},
+            \automataenvironment{}
+         \rangle{}
+         \models \phi
+      )
+      \land
+      \ifexistsin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models \egop{}~\phi
+      }
+   $
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \auop{\phi}{\psi} \triangleq
+   $]~~\\
+   $
+      (
+         \langle
+            \automatasystem{},
+            \automatastate{},
+            \automataenvironment{}
+         \rangle{}
+         \models \psi
+      )
+      %\verifiesfun{}(\psi, \automataenvironment{})
+      \lor
+      (
+         %\verifiesfun{}(\phi, \automataenvironment{})
+         (
+            \langle
+               \automatasystem{},
+               \automatastate{},
+               \automataenvironment{}
+            \rangle{}
+            \models \phi
+         )
+         \land
+      \forallin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models
+         \auop{\phi}{\psi}
+      }
+   $
+\item[%
+   $
+      \langle
+         \automatasystem{},
+         \automatastate{},
+         \automataenvironment{}
+      \rangle{}
+      \models
+      \euop{\phi}{\psi} \triangleq
+   $]~~\\
+   $
+      (
+         \langle
+            \automatasystem{},
+            \automatastate{},
+            \automataenvironment{}
+         \rangle{}
+         \models \psi
+      )
+      %\verifiesfun{}(\psi, \automataenvironment{})
+      \lor
+         %\verifiesfun{}(\phi, \automataenvironment{})
+         (
+            \langle
+               \automatasystem{},
+               \automatastate{},
+               \automataenvironment{}
+            \rangle{}
+            \models \phi
+         )
+         \land
+      \existsin{%
+         \langle{}
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+      }{\automatanext{}(\langle{} \automatastate{}, \automataenvironment{} \rangle{})}{%
+         \langle
+            \automatasystem{},
+            \automatastate{}',
+            \automataenvironment{}'
+         \rangle{}
+         \models
+         \euop{\phi}{\psi}
+      }
+   $
+\end{description}
+\fi
+\iffalse
+\paragraph{Linear Temporal Logic}
+Given $t\in\automatatraces{}$,
+\begin{description}
+\item[%
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i
+      \rangle{}
+      \models
+      \xop{}~\phi \triangleq
+   $]
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i+1
+      \rangle{}
+      \models
+      \phi
+   $
+\item[%
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i
+      \rangle{}
+      \models
+      \fop{}~\phi \triangleq
+   $]
+   $
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \phi
+      )
+      \lor
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i+1
+         \rangle{}
+         \models
+         \fop{}~\phi
+      )
+   $
+\item[%
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i
+      \rangle{}
+      \models
+      \gop{}~\phi \triangleq
+   $]
+   $
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \phi
+      )
+      \land
+      (
+         (
+            |t| \leq i
+         )
+         \lor
+         \langle{}
+            \automatasystem{},
+            t,
+            i+1
+         \rangle{}
+         \models
+         \gop{}~\phi
+      )
+   $
+\item[%
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i
+      \rangle{}
+      \models
+      \uop{\phi}{\psi} \triangleq
+   $]
+   $
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \phi
+      )
+      \lor
+      (
+         (
+            \langle{}
+               \automatasystem{},
+               t,
+               i
+            \rangle{}
+            \models
+            \psi
+         )
+         \land (|t| > i)
+         \land
+         \langle{}
+            \automatasystem{},
+            t,
+            i+1
+         \rangle{}
+         \models
+         \uop{\phi}{\psi}
+      )
+   $
+\item[%
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i
+      \rangle{}
+      \models
+      \rop{\phi}{\psi} \triangleq
+   $]
+   $
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \psi
+      )
+      \land
+      (
+         (
+            \langle{}
+               \automatasystem{},
+               t,
+               i
+            \rangle{}
+            \models
+            \phi
+         )
+         \lor (|t| \leq i)
+         \land
+         (
+            \langle{}
+               \automatasystem{},
+               t,
+               i+1
+            \rangle{}
+            \models
+            \rop{\phi}{\psi}
+         )
+      )
+   $
+\item[%
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i
+      \rangle{}
+      \models
+      \wop{\phi}{\psi} \triangleq
+   $]
+   $
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \phi
+      )
+      \lor
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \psi
+      )
+      \lor (|t| \leq i)
+      \lor
+      \langle{}
+         \automatasystem{},
+         t,
+         i+1
+      \rangle{}
+      \models
+      \uop{\phi}{\psi}
+   $
+\item[%
+   $
+      \langle{}
+         \automatasystem{},
+         t,
+         i
+      \rangle{}
+      \models
+      \mop{\phi}{\psi} \triangleq
+   $]
+   $
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \rop{\phi}{\psi}
+      )
+      \land
+      (
+         \langle{}
+            \automatasystem{},
+            t,
+            i
+         \rangle{}
+         \models
+         \fop{}~\phi
+      )
+   $
+\end{description}
+\fi
+
+\begin{example}
+Examples of reachability analysis that would be relevant for the system used in
+Example~\ref{ex:classical_automata} include:
+\begin{itemize}
+\item
+   Ensuring the count of transferred files is always within what we expect:
+$\agop{}~\textit{fetched} \ge 0 \land \textit{fetched} \le 386 \land
+   \textit{sent} \ge 0 \land \textit{sent} \le 386$
+\item
+   Checking consistency between the number of sent and fetched files:
+   $\agop{}~\textit{fetched} = \textit{sent}$
+\item
+   Verifying that all files always end up being received:
+   $\afop{}~\textit{fetched} = 386$
+\end{itemize}
+\end{example}

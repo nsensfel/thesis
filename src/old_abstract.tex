@@ -1,0 +1,58 @@
+This thesis proposes tools for to help in the certification of multi-core
+processors for use in aeronautical systems. While the parallel nature of
+multi-core processors can greatly improve computation speeds, it also renders
+them difficult to predict, preventing their use in critical environments.
+Indeed, in such processors, the cores share access to nearly all resources.
+This causes conflicts, or \textit{interference}, which lead to seemingly random
+variation in both execution time and program behaviors. Fortunately,
+multi-cores processors feature mechanisms that can be used to prevent these
+conflicts from generating problematic changes in program behaviors. One such
+mechanism is \textit{cache coherence}, which ensures that cores that use a same
+atomic memory block cannot blindly override the modifications made by another
+core and that all cores are made aware of all modifications. The difficulty
+lies in the fact that each core has its own private copy of these atomic memory
+blocks and cannot directly observe the copies of the other cores. To achieve
+cache coherence, the processor automatically follows a predetermined protocol.
+These protocols define messages to be generated according to the actions of a
+core, as well as the actions to be performed when another core's message is
+received. In effect, cache coherence resolves an issue of unpredictable
+program behaviors at the cost of a great increase in execution time
+variability.
+
+The focus of this thesis is to provide a way to predict the effects of the
+cache coherence mechanisms on the applications, as a necessary step toward
+their mitigation. In order to achieve this objective, the first contribution
+made is to address the ambiguities in the understanding applicants have of the
+coherence protocol implemented on their chosen architecture. Indeed,
+architecture documentation does not generally offer any details on their cache
+coherence protocol, preferring instead to simply name the class of protocol
+used. This thesis proposes a strategy relying on micro-benchmarks in order to
+clarify the implementation details of the protocol. This approach is illustrated
+by an application on the NXP QorIQ T4240 architecture. That example reveals the
+protocol implied by a rather confusing documentation to be a MESIF protocol
+instead of the MESI protocol one could be led to believe.
+
+Once the protocol is correctly identified, the applicant can use the other
+contributions made in this thesis to learn how cache coherence affects a given
+set of programs running on the architecture. The proposed strategy relies on
+the use of model checking applied to a timed automata representation of the
+architecture, for which this thesis provides a template. This template is
+designed to be modular in order to support architectures with different
+configurations. It focuses on components related to cache coherence, and a tool
+to automatically modify the coherence protocol it uses is also provided.
+
+Using model checking, the analyses proposed in this thesis start with a study
+of the worst-case execution time for the programs. By modifying the modeled
+architecture's configuration, the impact of cache coherence interference on
+this execution time can be isolated. As such a result would not be sufficient
+to address the interference itself, further analyses are performed, this time
+targeting each program instruction. These provide information on whether
+memory accesses find their intended data in caches or not. Indeed, as the then
+proposed interference categories indicate, cache coherence interference is a
+modification of access permissions by caches because of the instructions of
+another core. Using these new definitions, model checking can finally be used
+in order to determine how each instruction generates and suffers interference.
+This exposes all cache coherence interference to the applicant, with sufficient
+details to be the basis upon which a mitigation strategy can be based.
+
+

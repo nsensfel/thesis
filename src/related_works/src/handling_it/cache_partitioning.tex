@@ -1,0 +1,22 @@
+\subsection{Shared Cache Partitioning}
+\cite{10.1145/1629335.1629369} presents two algorithms for a condition
+sufficient to prove schedulability, it is meant for tasks with time and cache
+space constraints in the context of a shared L2 cache in which space is
+partitioned in order to avoid contentions.  Thus, this work is more about
+proving that the measures taken in order to address interference are sufficient
+rather than a strategy to control the interference itself. For these
+schedulability tests, the tasks are assumed to be non-preemptive and to have a
+fixed priority.
+
+The paper's first algorithm is based on constraint programming. It basically
+considers that there is a task missing its deadline, which implies that either
+all cores are being used, or that too little cache space is available.
+Intervals at which either of these conditions is true are searched for in order
+to find their maximal impact of the hypothetical task that missed its deadline.
+If this maximum impact is lower than the slack (longest affordable delay) of
+this hypothetical task, then the tasks are schedulable. The second algorithm is
+very similar, but simplifies the constraints by simply assuming the worst
+possible interference from the other tasks in all criteria with much less
+regard for whether the configuration leading to this interference is actually
+possible. This effectively creates a more scalable schedulability test, at the
+cost of being much more pessimistic.

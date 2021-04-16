@@ -1,0 +1,100 @@
+\section{Switching Coherence Protocol}
+\label{sec:protocol_switching}
+To make the model more easily adapted to a different architecture,
+it is accompanied by a tool called CoProSwi, that makes it possible to switch
+to a different cache coherence protocol automatically.
+
+This tool takes as input the model and a description of
+the target cache coherence protocol under the form of a text file describing
+the tables that define the behavior of caches and of the coherence manager (as
+in Figures~\ref{fig:msi_cc_table} and \ref{fig:msi_mgr_table}).
+
+Protocols described for CoProSwi indicate:
+\begin{itemize}
+\item A list of data message types. For example, \lstinline!(add_data_type DATA_MSG)!.
+\item
+   A list of query message types. For example,
+   \lstinline!(add_data_type GET_SHARED)!.
+\item A definition of the cache controller's behavior.
+\item A definition of the coherence manager's behavior.
+\end{itemize}
+
+A notable omission are the instructions: CoProSwi assumes all protocols are
+defined around the \loadinstr{}, \storeinstr{}, and \evictinstr{} instructions.
+The \ownquery{} event is also implicitely declared.
+
+When defining either the behavior of either the cache controller or the
+coherence manager:
+\begin{itemize}
+\item
+   Each coherence state is declared. These declarations indicate whether the
+   state is \lstinline!transient! or \lstinline!stable!. For example,
+   \lstinline!(add_state stable MSI_INVALID)! declares the \textit{Invalid}
+   stable state.
+\item
+   The default coherence state for memory elements is also indicated. It is
+   considered to be the \textit{Invalid} state's representation. For example,
+   \lstinline!(set_default_state MSI_INVALID)! sets \lstinline!MSI_INVALID!  as
+   the \textit{Invalid} state. The state must have been declared beforehand.
+\item
+   For each state, the list of actions to performed upon observation of an
+   event is then defined. In the case of the coherence's manager definition,
+   a \lstinline!if_is_owner! operator is added, allowing the definition of two
+   different action lists according to whether the message received came from
+   the component currently set as the memory element's owner or not.
+\item
+   If no actions are to be taken, the \lstinline!(none)! action must be
+   indicated. Indeed, the tool assumes that if a case is missing, it is because
+   of an user error, and not because no actions are to be taken.
+\item
+   The coherence manager only handles query and data message events, not
+   instructions nor reception of its own query (since it assumed to be unable
+   to send any).
+\end{itemize}
+
+CoProSwi takes care of all the otherwise tedious aspects of describing the
+protocol directly in UPPAAL, such as generating separate actions to be
+performed during the un-stalling process in caches (in order to correctly
+manage request queues). In effect, no knowledge of the model's
+inner workings is needed to describe the protocol or to use CoProSwi in
+general, since the protocol definition only uses notions from
+Chapter~\ref{cha:cache_coherence}.
+
+The modification of the model file is done through simple search and replace:
+only the automata's actions and variables needs to be modified. Locations and
+transitions are neither added nor removed. Thus, the model's file contains tags
+that points to the code that needs modification by the tool upon switching of
+protocol.
+
+\begin{figure}[hbt!]
+\begin{center}
+\begin{tabular}{c}
+\begin{lstlisting}
+/*[CMGR_STATES_DECLARATION]*/
+const mem_state_t MEM_I = 0;
+const mem_state_t MEM_I_D = 1;
+const mem_state_t MEM_S = 2;
+const mem_state_t MEM_I_O_S_B = 3;
+const mem_state_t MEM_S_D = 4;
+const mem_state_t MEM_M = 5;
+/*[/CMGR_STATES_DECLARATION]*/
+\end{lstlisting}
+\end{tabular}
+\end{center}
+\caption{Example of Tagged UPPAAL Code}
+\label{fig:UPPAAL:tag_example}
+\end{figure}
+
+Figure~\ref{fig:UPPAAL:tag_example} provides an example of tagged code section.
+This particular snippet corresponds to the coherence manager's states
+declaration.  When changing the coherence protocol, CoProSwi replaces the
+content found between the \lstinline!CMGR_STATES_DECLARATION! tags so that it
+matches the new protocol.  As a result, the UPPAAL file can be easily modified
+by the user without having to wonder what will break compatibility with
+CoProSwi. Furthermore, this means there is no master template: the output of
+CoProSwi can be re-used as-is if the protocol needs to be changed again.
+
+In addition to being able to modify the model, CoProSwi is also able to list
+all stable state change paths. This is useful when applying the coherence
+protocol identification process described in
+Chapter~\ref{cha:identifying_cache_coherence}.

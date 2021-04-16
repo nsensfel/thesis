@@ -1,0 +1,10 @@
+LOOP (i=0;i<N;i++)
+{
+   FREEZE_Counter();
+   INITIALIZE_Counter();
+   CONFIGURE_Counter();
+   UNFREEZE_Counter();
+   {Benchmark execution...}
+   FREEZE_Counter();
+   COLLECT_Counter();
+}

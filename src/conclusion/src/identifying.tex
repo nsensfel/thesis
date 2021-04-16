@@ -1,0 +1,80 @@
+\section{Identifying the Protocol}
+The details of cache coherence mechanisms provided in an architecture's
+documentation do not go into sufficient details for certification purposes. The
+documentation can even be vague enough to cause the applicant to be misled
+about which protocol is implemented on the architecture.  To remedy this, the
+first contribution made in this thesis is the cache coherence protocol
+identification process described in
+Chapter~\ref{cha:identifying_cache_coherence}.
+
+\subsection{Summary}
+The proposed cache coherence protocol identification process relies on being
+able to observe the binary flags defining the state of cache lines, as well as
+having sufficient performance monitors to observe cache coherence related
+activity (although solutions such as the one presented in
+Section~\ref{sec:elusive_hardware_monitors} may provide an alternative). The
+general idea being to use the documentation as a basis for the creation of a
+detailed hypothetical cache coherence, then validating it against observations
+made on the architecture by performing micro-benchmarks. These benchmarks first
+perform a reachability analysis on cache states, then the hypothetical cache
+coherence is used to generate benchmarks corresponding to behaviors not exposed
+by the initial reachability analysis.
+
+Successful application of the proposed strategy results in an ambiguity-free
+description of the architecture's cache coherence protocol (meaning a
+description following the notations presented in
+Chapter~\ref{cha:cache_coherence}).  This ambiguity-free description of the
+architecture's cache coherence protocol is an important information to have in
+order to prove that the effects of cache coherence on the system are under
+control. Indeed, performing benchmarks to measure access latency or bandwidth
+without this information is likely to result in the attribution of
+characteristics to the application of instructions on an mistaken system state.
+For example considering writing speed to be a certain value for memory elements
+seemingly in \texttt{Shared} in all caches of the system realizing that the
+protocol actually has a \texttt{Forward} state that will improve access speed.
+
+To illustrate the need for cache coherence identification, the case of the NXP
+QorIQ T4240 is presented in Chapter~\ref{cha:identifying_cache_coherence}.
+This architecture's documentation files indicate a MESI protocol (in the core
+documentation \cite{e6500}) with \textit{cache intervention} (in the
+motherboard family's documentation \cite{T4240}). By applying of the cache
+coherence protocol identification process, the architecture is shown to
+implement a MESIF protocol, which is fair from being obvious from the
+aforementioned documentation.
+
+\subsection{Limitations}
+There are two main limitations to the cache coherence protocol identification
+strategy: the risk of an unreasonably large search space during the naive
+reachability analysis and the possibility of undetected
+behaviors.
+
+The proposed naive reachability analysis performs up to $3 * \cachecount{}$,
+benchmarks per observed system state (i.e.~each instruction on each core, if no
+caches have the same state). Unfortunately, the number of observed system states
+can be needlessly high if the considered binary flags of cache lines contain
+quickly changing information not pertinent to cache coherence. For example, if
+flags meant to provide information to the cache replacement policy are
+unwittingly considered, the number of observed system states is likely to be
+exceedingly high.
+
+The other limitation is that it is always possible for the architecture to have
+behaviors that were not observed by the benchmarks. Indeed, provided the system
+state is actually defined by components that cannot be observed, the naive
+reachability analysis might not encounter them. Likewise, nothing can be done
+to ensure the benchmarks guided by the hypothetical protocol would expose them
+either.
+
+\subsection{Future Works}
+The identification process would greatly benefit from the addition of a step
+in which the cache's binary flags are analyzed in order to remove what has no
+chance of being related to cache coherence.
+
+The \textit{Naught} library currently only performs a single benchmark per
+execution. It should be possible to improve it in order to have all benchmarks
+for an observable system state be performed in a single execution.
+
+\textit{Naught} could further be improved to perform the complete
+identification process in a single execution, if given the ability to look at
+the binary flags of cache lines. This would render the application of this
+identification process trivial and greatly improve its chances at being adopted
+as a common practice.

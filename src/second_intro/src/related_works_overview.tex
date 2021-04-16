@@ -1,0 +1,33 @@
+\stopallthesefloats
+\section{Related Works Overview}
+The related works part of this thesis is split into three parts. The first part
+covers works relating to the general issue of using the caches of a multi-core
+processors in a critical environment. The general consensus ending up being:
+the use of caches in a way that does not make WCET computations yield unusable
+results requires either hardware modifications, or severe restrictions on their
+use. Nevertheless, solutions do exist. The very few that do allow cache
+coherence require hardware modifications. This thesis considers a context in
+which such modifications are not possible, and thus explores an approach relying
+solely on the analyzing the effects of cache coherence in order to control the
+interference it generates.
+
+Even without cache coherence, the analysis of caches by themselves is not
+simple: determining the state of the cache when an access is made requires
+perfect knowledge of the placement and replacement policies, as well as of all
+access made until that point. Cache coherence complicates matters, by adding
+the notion of access rights (\textit{read-only}, \textit{read-and-write}) and
+allowing other caches to change the content of the analyzed cache. Thus, there
+are even more cases where a small simplification of the analysis may lead to
+completely incorrect results. In this thesis, the use of formal methods (see
+Chapter~\ref{cha:timed_automata}) ensure all cases are covered. The next
+chapter of the related works section covers similar approaches for the analysis
+of execution time using timed automata.
+
+These approaches transform the problem into the issue of having an accurate
+representation of the architecture and the applications running on it, and the
+issue of model checking performance. The latter is not addressed in this
+thesis. The former, however, is. Indeed, among the contributions is a strategy
+to ensure understanding of a platform's cache coherence mechanisms. It relies
+on micro-benchmarks. Micro-benchmarks are widely used to measure capabilities
+of architectures, and so examples of such micro-benchmarks are given in the
+last chapter of the related works part of this thesis.

@@ -1,0 +1,21 @@
+\subsubsection{Bypass Heuristics}
+\cite{lesage:inria-00531214} uses a similar approach to
+\cite{10.1109/RTSS.2009.34}, this time focusing on data caches instead. Cache
+coherence protocols are not considered. Indeed, all accesses to shared data is
+assumed to bypass private caches (something that could be implemented by
+\cite{bansal2019cache}, for example) and all shared-caches are assumed
+to be write-through. Data and instructions are assumed to not interfere with
+each other. In effect, the main change from what is presented in
+\cite{10.1109/RTSS.2009.34} is how accesses to a memory bock are determined:
+in the case of an instruction cache, a single instruction always points to
+the same memory blocks; whereas in data caches, the relation between instruction
+and memory block is murkier, as addresses may be aliased. This makes the
+detection of Static Single Usage cache blocks, which were the target of bypass
+mechanisms in \cite{10.1109/RTSS.2009.34}, much more complex. Multiple
+heuristics on which elements to bypass at shared cache level $\ell$ are
+provided: any instruction for which none of the targeted memory references have
+statically been detected to be leading to a sure hit in $\ell$ in the future;
+any instruction for which the target cannot be statically computed, in order to
+increase determinism; and one that bypasses any access of a task until it only
+occupies a given number of cache ways, which allows for conflict reduction
+through control of the maximum occupied space by each task.

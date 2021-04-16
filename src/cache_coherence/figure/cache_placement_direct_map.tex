@@ -1,0 +1,33 @@
+
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,  semithick]
+\tikzstyle{address} = [state,rectangle,  node distance = 0.5cm and 3cm]
+\tikzstyle{cacheline} = [state,rectangle, node distance = 0.5cm and 3cm]
+
+\node[address] (ADDR0)        {Address 0};
+\foreach \c in {1,...,7}
+{
+   \node[address] (ADDR\c)  [below = of ADDR\the\numexpr \c - 1\relax]    {Address \c};
+}
+
+\node[cacheline] (CL0) [right = of ADDR0] {Cache Line 0};
+\foreach \c in {1,...,7}
+{
+   \node[cacheline] (CL\c)  [below = of CL\the\numexpr \c - 1\relax]    {Cache Line \c};
+}
+
+\node[address] (ADDR8) [right = of CL0] {Address 8};
+\foreach \c in {9,...,15}
+{
+   \node[address] (ADDR\c)  [below = of ADDR\the\numexpr \c - 1\relax]    {Address \c};
+}
+
+\foreach \cc in {0,...,7}
+{
+   \path (ADDR\cc.east) edge (CL\cc.west);
+}
+\foreach \cc in {8,...,15}
+{
+   \path (ADDR\cc.west) edge (CL\the\numexpr \modulo{\cc}{8} \relax.east);
+}
+
+\end{tikzpicture}

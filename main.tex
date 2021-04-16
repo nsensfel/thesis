@@ -1,0 +1,80 @@
+\documentclass{book}
+
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+
+% Failed attempt at setting wider margins for figures
+\usepackage[export]{adjustbox}
+\usepackage[french,english]{babel}
+\usepackage{xspace}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{stmaryrd}
+
+\usepackage{multicol}
+\usepackage{float}
+
+\input{include/bibliography}
+\input{include/compilation}
+\input{include/code}
+\input{include/environments}
+\input{include/formal_notations}
+\input{include/tex_hacks}
+\input{include/tables}
+\input{include/thesis_info}
+\input{include/tikz}
+\input{include/phylog_tikz}
+\input{include/todo}
+
+\usepackage{forest}
+
+\usepackage{fancyhdr}
+\pagestyle{empty}
+\newenvironment{abstract}%
+{\cleardoublepage\null \vfill\begin{center}%
+\Huge \bfseries Abstract \end{center}}%
+{\vfill\null}
+
+\newenvironment{abstractfr}%
+{\cleardoublepage\null \vfill\begin{center}%
+\Huge \bfseries R\'esum\'e Fran\c{c}ais \end{center}}%
+{\vfill\null}
+
+\begin{document}
+   \makeflyleaf
+
+   \begin{abstract}
+   \input{src/abstract.tex}
+   \end{abstract}
+
+   \begin{abstractfr}
+   \input{src/abstract_fr.tex}
+   \end{abstractfr}
+
+   \tableofcontents
+
+   \part{Context}
+   \input{src/introduction/main.tex}
+   \input{src/formal_methods/main.tex}
+   \input{src/cache_coherence/main.tex}
+   \input{src/second_intro/main.tex}
+
+   \part{Related Works}
+   \input{src/related_works/main.tex}
+
+   \part{Contributions}
+   \input{src/identifying/main.tex}
+   \input{src/modeling/main.tex}
+   \input{src/analyzing/main.tex}
+
+   \part{Conclusions \& Perspectives}
+   \input{src/conclusion/main.tex}
+   %\input{src/discussion/main.tex}
+   \input{src/extended_fr_summary/main.tex}
+
+   \appendix
+   \input{src/appendices/main.tex}
+
+\bibliography{../bibliography/cache_coherence,../bibliography/modeling,../bibliography/arch_and_cert,../bibliography/self,../../bib/bib,../../bib/bib_onera,../../bib/bib_phylog_onera}
+\end{document}

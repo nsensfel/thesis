@@ -1,0 +1,24 @@
+
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,  semithick]
+\tikzstyle{address} = [state,rectangle,  node distance = 0.5cm and 2cm]
+\tikzstyle{cacheline} = [state,rectangle, node distance = 0.5cm and 2cm]
+
+\node[cacheline] (CL0) {Cache Line 0: A [3]};
+\node[cacheline] (CL1) [below = of CL0] {Cache Line 1: B [2]};
+\node[cacheline] (CL2) [below = of CL1] {Cache Line 2: C [1]};
+\node[cacheline] (CL3) [below = of CL2] {Cache Line 3: D [0]};
+
+\node[] (sep0) [right = of CL1,xshift=-1em,yshift=-2em] {$ \Longrightarrow $};
+
+\node[cacheline] (CL0b) [right = of CL0] {Cache Line 0: E [0]};
+\node[cacheline] (CL1b) [below = of CL0b] {Cache Line 1: B [3]};
+\node[cacheline] (CL2b) [below = of CL1b] {Cache Line 2: C [2]};
+\node[cacheline] (CL3c) [below = of CL2b] {Cache Line 3: D [1]};
+
+\node[] (sep1) [right = of CL1b,xshift=-1em,yshift=-2em] {$ \Longrightarrow $};
+
+\node[cacheline] (CL0c) [right = of CL0b] {Cache Line 0: E [1]};
+\node[cacheline] (CL1c) [below = of CL0c] {Cache Line 1: B [3]};
+\node[cacheline] (CL2c) [below = of CL1c] {Cache Line 2: C [0]};
+\node[cacheline] (CL3c) [below = of CL2c] {Cache Line 3: D [2]};
+\end{tikzpicture}

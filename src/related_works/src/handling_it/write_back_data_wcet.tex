@@ -1,0 +1,18 @@
+\subsubsection{Write-Back Data Caches}
+\cite{10.1145/3139258.3139269} tackles the issue of WCET computation in
+multi-core processors that use data (or unified) shared caches with write-back
+policies. Although not explicitly stated in the paper, this approach does not
+consider separate caches of the same hierarchy: all caches are shared by all
+cores that could access the data they contain. Ergo, no cache coherence, but a
+cascade of non-inclusive shared caches.
+
+In addition to the standard categorization of a cache line in a particular
+cache level (always hits, never hits, and so on\ldots), the \textit{dirtiness}
+is also modeled. The possible values are: dirty (i.e.~has been written to, but
+changes were not yet propagated), clean, or possibly dirty. The main challenge
+is then to estimate when the write back will occur.
+\cite{10.1145/3139258.3139269} indicates how to take this new attribute into
+account when performing the usual cache static analysis, and the constraints it
+adds to the linear optimization problem representation of the WCET computation.
+
+

@@ -1,0 +1,125 @@
+\chapter{Micro-Stressing Benchmarks}
+\label{cha:micro-benchs}
+This chapter presents strategies relying on benchmarks to figure out the
+characteristics of an architecture, be it its speed, the capacity of its
+components, or other information not sufficiently detailed in the architecture's
+documentation. Having properly characterized the architecture is a
+necessary preliminary step to the analysis of interference. Indeed, to
+understand the effects the interference has on running software, a
+quantification of the architecture's components capabilities is necessary, as
+determining which parallel accesses would interfere with one another is
+otherwise impossible.
+
+In the contributions made by this thesis, the objective of the benchmarks is not
+only to measure the maximum performance of the cache coherence mechanisms, but
+also ascertain that they are fully understood by the user. This is a vital part
+of the characterization process, and solutions for mechanisms much simpler than
+cache coherence have already been explored. For example, the first section of
+this chapter showcases two papers proposing solutions to detect hidden
+correlations between components.
+
+Once the mechanisms have been understood, then the performance measurements can
+proceed, as the user is now fully aware of what is being measured. The second
+section of this chapter is thus about papers on the use of benchmarks for the
+performance analysis of cache coherence.
+
+Lastly, this chapter presents a paper on the use of benchmarks to remedy a lack
+of performance monitors. Such an approach could be used to implement the
+solution proposed in Chapter~\ref{cha:identifying_cache_coherence} if the user
+cannot find the appropriate performance monitors.
+
+Because the terms are recurrently used thorough this chapter, definitions for
+\textit{execution time}, \textit{overhead}, and \textit{bandwidth} are provided below.
+
+\begin{definition}[Configuration]
+\label{def:configuration}
+A configuration is defined as the combination of the mapping of programs on each
+core, the hardware's settings, and the initial state of the architecture prior
+to program execution.
+\end{definition}
+
+\begin{example}[Configuration]
+\label{ex:configuration}
+Running a sequence of instructions in isolation, and running that same sequence
+of instructions while other programs are running on other cores correspond to
+two separate configurations.
+\end{example}
+
+\begin{definition}[Execution Time]
+The execution time of a list of instructions on a certain configuration is the
+time between the emission of the first of the instructions and the last
+instruction of the list being seen as completed by the emitter.
+\end{definition}
+
+\begin{example}[Execution Time]
+In the case of two successive loads, the execution time corresponds to the time
+elapsed between core emitting the first load instruction to its cache, and the
+cache providing the data for the second load instruction.
+\end{example}
+
+
+\begin{definition}[Overhead]
+Given $T_A$ and $T_B$ two execution times of a same list of instructions from
+two separate arbitrary configurations $A$ and $B$, such that $T_B \ge T_A$, The
+overhead $O$ of being in configuration $B$ over configuration $A$ is defined as:
+\[ O = T_B - T_A \]
+\end{definition}
+
+\begin{example}[Overhead]
+If the two configurations of Example~\ref{ex:configuration} yielded an execution
+time of 5 CPU cycles and 13 CPU cycles respectively, the overhead incurred
+because of the other programs running in parallel would be $13 - 5 = 8$ CPU
+cycles.
+\end{example}
+
+\begin{definition}[Bandwidth]
+Bandwidth is the amount of data (e.g.~bits, bytes, words) that can be
+transferred from one component to another within a given time frame.
+\end{definition}
+
+\begin{example}[Bandwidth]
+A CPU attempting to write a sequence of data with a size of 512MB in the memory
+would have to pass the information through all the mechanisms between itself and
+the memory. The amount of data that went through all the mechanisms within
+either a CPU cycle or a microsecond is considered to be the bandwidth.
+\end{example}
+
+\stopallthesefloats{}
+\section{Detecting Component Correlation}
+\stopallthesefloats{}
+\input{\chapterdirectory/src/micro_bench/radojkovic.tex}
+\stopallthesefloats{}
+\input{\chapterdirectory/src/micro_bench/co_running_apps_cots.tex}
+\stopallthesefloats{}
+\section{Analyzing Cache Performance}
+The previous section showed approaches to the detection of potential
+interference channels that could be applied to any component, but whose
+genericity ran the risk of failing to detect complicated relations between
+components. This section focuses on approaches that use benchmarks to
+characterize cache coherence performance and/or interference channels.
+\stopallthesefloats{}
+\input{\chapterdirectory/src/micro_bench/other.tex}
+\stopallthesefloats{}
+\input{\chapterdirectory/src/micro_bench/intel_nehalem.tex}
+\stopallthesefloats{}
+\input{\chapterdirectory/src/micro_bench/hardware_monitors_where_there_are_none.tex}
+\stopallthesefloats{}
+\section{Conclusion}
+The approach shown in Section~\ref{sec:nehalem} is adequate for the second step
+of the framework presented in this thesis (see
+Section~\ref{sec:second_intro:framework}), in which the performance of the
+architecture's cache coherence mechanisms are measured in order to feed them to
+a model. Indeed, it does provide interesting information about single
+instruction execution time according to the type of instruction being performed
+(\loadinstr{} or \storeinstr{}) and the cache coherence state. It does not,
+however, attempt to analyze the internals of the cache coherence mechanisms used
+by the architecture. In fact, some of them are explicitly ignored
+(\textit{Forward} state). Thus, while being an important step, it remains
+insufficient to provide the user with enough information to understand what
+interference could be generated by cache coherence mechanisms, unless the
+identification step proposed in this thesis is applied.
+
+Furthermore, approaches such as the one described in
+Section~\ref{sec:elusive_hardware_monitors} can be used to apply the framework
+presented in this thesis to architectures with more restricted monitoring
+facilities.

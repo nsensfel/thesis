@@ -1,0 +1,73 @@
+\usepackage{tikz}
+
+\usetikzlibrary{arrows}
+\usetikzlibrary{automata}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{matrix}
+\usetikzlibrary{patterns}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes,shapes.arrows,shapes.callouts,shapes.symbols}
+
+\usetikzlibrary{shapes,arrows,backgrounds,positioning,calc, automata, backgrounds,fit, arrows, decorations.pathreplacing}
+\usetikzlibrary{shadows, backgrounds,graphs, trees, patterns}
+
+\definecolor{dblue}{rgb}{.11,.4,.7}
+
+\tikzset{block/.style={draw,rectangle,text centered, text width=#1}}
+\tikzset{block/.default={draw,rectangle}}
+\tikzset{arc/.style={-latex}}
+\tikzset{back/.style={latex-}}
+\tikzset{connect/.style={draw, circle, fill=black, scale=.3}}
+\tikzset{br/.style n args={2}{below=#1 of #2, anchor= south west}}
+\tikzset{bl/.style n args={2}{below=#1 of #2, anchor= south east}}
+\tikzset{ar/.style n args={2}{above=#1 of #2.south east}}
+\tikzset{al/.style n args={2}{above=#1 of #2.south west}}
+\tikzset{bolded/.style={line width= 2 pt}}
+
+\tikzset{com/.style={draw, ellipse, thick, text centered, text width=3cm}}
+
+
+\tikzset{
+    max width/.style args={#1}{
+        execute at begin node={\begin{varwidth}{#1}},
+        execute at end node={\end{varwidth}}
+    }
+}
+\tikzset{%
+    set width/.style args={#1}{%
+      text width=#1,
+        execute at begin node={\begin{varwidth}{#1}},
+        execute at end node={\end{varwidth}}
+    }
+}
+
+
+% Trying out some way to model comm. in UPPAAL
+\usetikzlibrary{matrix}
+\usetikzlibrary{arrows}
+\pgfdeclareshape{datastore}{
+  \inheritsavedanchors[from=rectangle]
+  \inheritanchorborder[from=rectangle]
+  \inheritanchor[from=rectangle]{center}
+  \inheritanchor[from=rectangle]{base}
+  \inheritanchor[from=rectangle]{north}
+  \inheritanchor[from=rectangle]{north east}
+  \inheritanchor[from=rectangle]{east}
+  \inheritanchor[from=rectangle]{south east}
+  \inheritanchor[from=rectangle]{south}
+  \inheritanchor[from=rectangle]{south west}
+  \inheritanchor[from=rectangle]{west}
+  \inheritanchor[from=rectangle]{north west}
+% Stuff below breaks compilation, because of course it does...
+%  \backgroundpath{
+%    %  store lower right in xa/ya and upper right in xb/yb
+%    \southwest \pgf@xa=\pgf@x \pgf@ya=\pgf@y
+%    \northeast \pgf@xb=\pgf@x \pgf@yb=\pgf@y
+%    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@ya}}
+%    \pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@ya}}
+%    \pgfpathmoveto{\pgfpoint{\pgf@xa}{\pgf@yb}}
+%    \pgfpathlineto{\pgfpoint{\pgf@xb}{\pgf@yb}}
+% }
+}

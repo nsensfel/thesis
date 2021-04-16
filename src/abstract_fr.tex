@@ -1,0 +1,50 @@
+\begin{otherlanguage}{french}
+L'objectif de cette thèse est d'offrir des outils d'aide à la certification
+aéronautique de processeurs COTS multi-cœurs. Ces architectures sont par nature
+parallèles et peuvent de ce fait largement améliorer les performances de
+calcul. Cependant elles souffrent d'un grand manque de prédictibilité, au sens
+où calculer les pires d'exécution même pour des programmes simples est un
+problème complexe, voire impossible dans le cas général. En effet, les cœurs
+partagent l'accès à presque toutes les ressources ce qui provoque des conflits
+(qualifiés d'interférences) entrainant des variations non maîtrisées des temps
+d'exécutions.  Parmi les mécanismes complexes d'un processeur multi-coeur se
+trouve la cohérence de caches. Celle-ci assure que tous les cœurs lisant ou
+écrivant dans un même bloc mémoire ne peuvent pas aveuglement ignorer les
+modifications appliquées par les autres.  Afin de maintenir la cohérence de
+caches, le processeur suit un protocole pré-déterminé qui définit les messages
+à envoyer en fonction des actions d'un cœur ainsi que les actions à effectuer
+lors de la réception du message d'un autre cœur.
+
+Cette thèse porte sur l'identification des interférences générées par les
+mécanismes de cohérence de caches ainsi que sur les moyens de prédiction de
+leurs effets sur les applications en vue de réduire les effets négatifs
+temporels.  La première contribution adresse les ambiguïtés dans la
+compréhension que les applicants ont de la cohérence de cache réellement
+présente dans l'architecture.  En effet, la documentation des architectures ne
+fournit généralement pas suffisamment de détails sur les protocoles.  Cette
+thèse propose une formalisation des protocoles standards, ainsi qu'une
+stratégie, reposant sur les micro-benchmarks, pour clarifier les choix
+d'implémentation du protocole de cohérence présent sur l'architecture. Cette
+stratégie a notamment été appliquée sur le NXP QorIQ T4240. Une fois le
+protocole correctement identifié, la seconde contribution consiste à réaliser
+une description bas-niveau de l'architecture en utilisant des automates
+temporisés afin de représenter convenablement les micro-comportements et
+comprendre clairement comment le protocole de cohérence de cache agit. Ainsi,
+un framework de génération de modèles génériques a été développé, capable de
+supporter plusieurs protocoles de cohérence de cache et de représenter
+différents agencements d'architectures afin de mieux correspondre à
+l'architecture choisie par le postulant. La troisième contribution explique
+comment utiliser cette représentation de l'architecture pour exhiber les
+interférences. Elle propose une stratégie pour détailler les causes et effets
+de chaque interférence liée à la cohérence de caches sur les programmes.
+Commençant par une simple analyse de temps d'exécution, les résultats
+descendent jusqu'au niveau des instructions pour indiquer comment chaque
+instruction génère et souffre des interférences. L'objectif étant alors de
+fournir suffisamment d'information à l'appliquant à la fois pour la
+certification, mais aussi pour définir une stratégie d'atténuation et de
+maîtrise des effets temporels.
+
+Ainsi, cette thèse fournit l'appliquant des outils pour comprendre les
+mécanismes de cohérence de cache présent sur une architecture donnée et pour
+exhiber les interférences associées.
+\end{otherlanguage}

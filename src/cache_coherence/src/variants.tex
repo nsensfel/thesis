@@ -1,0 +1,31 @@
+\newpage{}
+\section{Variants}
+This section presents the most common variants of the MSI. In effect, the main
+factor of a cache coherence protocol's efficiency is how frequently it needs to
+fetch or write data to the main memory. As a result, it is unsurprising to see
+that all of these optimizations are focused on removing that necessity in
+certain common scenarios. Each of them adds a new stable state, corresponding
+to a new permission or new responsibility, and each one can be combined with
+the others to form a new variant (forming for example, the MESI, MOESI, and
+MESIF protocols).
+
+\paragraph{Exclusive State}
+The Exclusive state (\texttt{E}) is equivalent to the \texttt{S} state, with the
+added information that no other cache currently holds any copy of the memory
+element. As a result, the cache modifying the value of its copy of the memory
+element without broadcasting for new permission does not violate
+Properties~\ref{prop:system_wide_value} and \ref{prop:swmr}. It does, however,
+mean that the coherence manager must be able to detect that no caches hold any
+copy of the memory element, which implies some change in how caches evict
+from the \texttt{S} state, as they otherwise need not do inform any other
+component.
+
+\paragraph{Owned State}
+The Owned state (\texttt{O}) allows a cache to keep its modified copy of a
+memory element without having to perform a write-back when another cache asks
+for a read-only copy of that memory element.
+
+\paragraph{Forward State}
+The Forward state (\texttt{F}) is equivalent to an \texttt{S} state where the
+cache is also in charge of providing a copy of the memory element to any cache
+that demand it.

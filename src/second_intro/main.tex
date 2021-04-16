@@ -1,0 +1,29 @@
+\chapter{Objective}
+\label{cha:second_intro}
+\definechapterdirectory{src/second_intro}
+
+\input{\chapterdirectory/src/introduction.tex}
+\input{\chapterdirectory/src/hypotheses.tex}
+
+\stopallthesefloats
+\section{Conclusion}
+This chapter concludes the context part of the thesis by clearly defining the
+objective of this thesis and curtailing its target application.
+
+The next part of the thesis presents a selection of the existing literature
+relevant to this thesis. It starts with a chapter focused on benchmarking
+(Chapter~\ref{cha:micro-benchs}), providing a description of approaches that can
+be used to measure the performance of the architecture's cache coherence
+mechanisms once the protocol has been identified.
+
+Literature around the broader issue of using a multi-core processor's caches in
+a critical real-time environment is then presented
+(Chapter~\ref{cha:handling_it}). None of the existing solutions allow the use of
+cache coherence within an aeronautical context, but there are ways to still
+benefit from caches by adhering to restrictions on their use.
+
+Lastly, the related works part of this thesis features a chapter on approaches
+similar to that presented in this thesis for the use of formal methods to
+analyze an architecture (Chapter~\ref{cha:analyzing_rel_work}). It shows that
+the use of timed automata eases the creation of both readable and modular
+models.

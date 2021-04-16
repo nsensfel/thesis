@@ -1,0 +1,67 @@
+\subsection{Limited Shared Resources}
+\begin{figure}
+\centering
+\includegraphics[width=0.6\columnwidth]{\chapterdirectory/figure/handling_it/marthy.png}
+\caption{%
+System running Marthy (Control Software in the figure), a figure extracted from
+\cite{7311481}.
+}
+\label{fig:handling_it:marthy}
+\end{figure}
+
+One approach to dealing with cache coherence in multi-core processors for
+environments requiring certification is to simply use the caches in a manner
+that cancels the need for such a feature. Indeed, since the applications for
+single core are already available, it stands to reason plenty of them could run
+on multi-core processors without the need for shared memory elements. For
+example, \cite{jean:tel-01341758} presents \textit{Marthy} (see
+Figure~\ref{fig:handling_it:marthy}), a hypervisor aiming to enforce robust
+partitioning between applications running on a COTS multi-core processor. This
+hypervisor permanently lives in the cache of each core, using cache locking
+mechanisms to avoid being inadvertently removed, and makes use of the MMU to
+take over whenever an instruction triggers a cache miss, stalling that
+instruction until access to the system's shared resources (i.e.~any shared
+component, not just memory) is exclusively granted to the core by a TDMA. All
+shared memory elements must be read-only, which does indeed remove the need for
+cache coherence mechanisms.
+
+\stopallthesefloats
+
+\subsection{Isolated Communications Through Scheduling}
+\begin{figure}
+\centering
+\includegraphics[width=0.5\columnwidth]{\chapterdirectory/figure/handling_it/deterministic_execution_model.pdf}
+\caption{%
+Overview of the strategy presented in \cite{10.1007/978-3-642-28293-5_9} (taken
+from the paper)
+}
+\label{fig:handling_it:deterministic_execution_model}
+\end{figure}
+
+In \cite{10.1007/978-3-642-28293-5_9}, careful scheduling is used to make
+calculating the worst-case execution time easier. This scheduling requires
+programs running on each cores to have been sliced into computation blocks and
+communication ones. Computation blocks are built so that while a core is in
+one, the other cores cannot access the same data (or only as a read-only copy
+if all tasks are only reading this data). Communications nodes indicate
+fetching and writing periods (no computation), which are similarly limited by
+any task currently performing a computation block. The paper provides a
+strategy to automatically slice the programs intended for a core into a
+scheduling of these types of blocks.
+Figure~\ref{fig:handling_it:deterministic_execution_model} shows an example of
+two cores having their tasks scheduled in this manner. White blocks indicate
+time reserved for computation; grey blocks are for flushes; and black blocks
+are for fetches.
+
+Because they do not access any shared resource, calculating the worst-case
+execution time of the computation blocks is equivalent to doing so on a single
+core processor. \cite{10.1007/978-3-642-28293-5_9} proposes a solution for the
+calculation of the worst-case time of communication blocks, including the
+possibility for them to occur in parallel with other communication blocks from
+other cores. It relies on the creation of a UPPAAL model to account for all
+possible interleavings of any communications that may occur during that
+particular communication block.  The aforementioned scheduling ensures that all
+communications that can happen at that time are known.
+
+
+\stopallthesefloats

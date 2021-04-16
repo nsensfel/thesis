@@ -1,0 +1,142 @@
+\subsection{Strategy Application for a MESI Protocol}
+\label{sec:identification:application}
+This section presents the application of the naive exploration of the strategy
+being applied to the NXP QorIQ T4240 architecture. The steps presented here have
+a slight deviation from those indicated in the strategy description. Indeed, the
+strategy saw an improvement between its application as described here and its
+addition to the thesis: at the time, the absence of observable coherence manager
+led to its state being ignored rather than it being assumed to match the
+hypothetical protocol. The updated strategy detects mismatches faster. In this
+application of the strategy, a mismatch in coherence manager behavior is likely
+to only be detected during the guided exploration.
+
+\subsection{Coherence State Matching}
+\begin{figure}[hbt]
+\input{\chapterdirectory/figure/mesi_obs_trans_states.tex}
+\caption{T4240 L2 Cache state transitions}
+\label{fig:identification:state_transitions}.
+\end{figure}
+
+Applying Step~\ref{step:reachability} of
+Figure~\ref{fig:identification:state_exploration} on the T4240 yields the
+stable state transitions summarized in the \textit{Origin} and \textit{Observ}
+columns of Figure~\ref{fig:identification:state_transitions}. The
+\textit{Origin} column corresponds to the observed system state in
+\obssystemstate{} prior to the operation being performed, and each
+\textit{Observ} corresponds to the element of \obssystemstate{} observed upon
+application of the given instruction (see top row) on the first cache. The
+figure covers all the possible sets of stable states for the coherence of a
+single memory element on the system's clusters, since the permutation of two
+clusters does not impact the cache coherence's mechanisms. The transitions,
+however, are limited to those relevant when only a single operation is applied
+across the whole system. Furthermore, this does not account for any state of
+the coherence manager, as these cannot be observed, as explained in
+Limitation~\ref{lim:no_cmgr}.
+
+Once these observations are completed, Step~\ref{step:state_matching} can start:
+the observed states can be matched with the hypothetical ones: the observed
+\benchm{}, \benche{}, and \benchi{} states perfectly match their \texttt{M},
+\texttt{E}, and \texttt{I} counterparts from the MESI protocol. The \texttt{S}
+state, however, seems to match our observations of both the \benchs{} and
+\benchi{} states. Indeed, starting from
+\texttt{$\langle$\benchi{},\benchi{},\benchm{}$\rangle$} and performing a
+\texttt{load} operation on the first cluster, leads to two different states,
+\benchs{} and \benchx{}, where the \texttt{S} state equivalent would have been
+expected. The same occurs when starting from
+\texttt{$\langle$\benchi{},\benchi{},\benche{}$\rangle$}. By itself, this
+observation is not sufficient to conclude that there is a discrepancy between
+hypothetical protocol and the observed one. Indeed, the two observed states are
+marked as separate, their difference may very well not be related to cache
+coherence (e.g.~hint for cache eviction) and the two states may actually simply
+correspond to our \texttt{S} state. It is only by comparing how those now
+exposed two states differ, if at all, in their behavior that we may conclude
+whether they represent an inconsistency.
+
+As we go through the different transitions from one stable state to another, we
+observe that performing an evict on either \benchs{} or \benchx{} does not
+affect the other caches' state, which means that reaching either
+\texttt{$\langle$\benchx{},\benchi{},\benchi{}$\rangle$} or \texttt{$\langle$\benchs{},\benchi{},\benchi{}$\rangle$}
+(or any permutation of these clusters) is possible.
+In addition, the previous step showed that there is no
+way to have a system in which two clusters hold the same memory element in the
+\benchs{} state: the first cluster to reach the \benchs{} moves to the \benchx{}
+state upon seeing the other's query. Neither is it possible to have all three
+clusters in the \benchx{} state: the last cluster to load from \benchi{} always
+enters \benchs{}, and there is no way to reach \benchs{} other than doing
+exactly that.
+
+\begin{figure}[hbt]
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+State & \textit{Dirty} & \textit{Valid} & \textit{Share} & \textit{Exclusive}
+& \textit{LastReader}
+\\
+\hline
+\benchm{} & \checkmark & \checkmark &   &   &  \\
+\hline
+\benche{} &   & \checkmark &   & \checkmark &  \\
+\hline
+\benchi{} &   &   &   &   &  \\
+\hline
+\benchs{} &   & \checkmark &   &   & \checkmark\\
+\hline
+\benchx{} &   & \checkmark & \checkmark &   &  \\
+\hline
+\end{tabular}
+\end{center}
+\caption{Observable Coherency Cache States of the T4240 L2 Caches Protocol}
+\label{fig:benchmark_states}
+\end{figure}
+
+A benefit of using CodeWarrior is that the fields defining the state of a cache
+line are labelled. Figure~\ref{fig:benchmark_states} indicates the fields
+corresponding to each observed cache state.
+
+\subsection{Coherence Activity Matching}
+While having both \benchx{} and \benchs{} mapped to the \texttt{S} state does
+not contradict the hypothetical protocol, it does raise suspicions of a
+protocol mismatch. This suspicion is confirmed by the activity analysis
+(Step~\ref{step:behavior_matching} of
+Figure~\ref{fig:identification:state_exploration}).
+
+\begin{figure}[hbt!]
+\begin{center}
+\input{\chapterdirectory/figure/unexpected_behaviors.tex}
+\end{center}
+\caption{Focusing on the Activities of \benchs{} and \benchx{}}
+\label{fig:unexpected_behaviors}
+\end{figure}
+
+Figure~\ref{fig:unexpected_behaviors} shows the non-null values returned by the
+performance monitors when loading a dataset of 8000 unique memory elements from
+the \benchi{} state on a cluster, depending on the coherence state for these
+memory elements on another cluster. The upper table indicates what is recorded
+on the cluster performing the \texttt{load} operations and the bottom table
+corresponds to what is recorded on the farthest cluster, hence the symmetry
+between the two tables of the \textit{Origin} state column and that of operation
+performed. The activity analysis results for
+\texttt{$\langle$\benchi{},\benchi{},\benchi{}$\rangle$} are given as a reference
+point. Indeed, as it was so far assumed that \benchx{} and \benchs{} are
+equivalent to an \texttt{S} state, the results ought to have been the same in
+all the lines of this first table.
+
+The first surprising observation is that the amount of L2D accesses is
+consistently twice the expected number. While it is odd and I have not found the
+reason behind this discrepancy, I chose to not consider it to be a sufficient
+contradiction of hypothetical protocol, as this factor holds true for every
+single one of the benchmarks.
+
+Much more interesting is the hint of truly unexpected activity found in the
+upper table, where the \texttt{$\langle$\benchi{},\benchi{},\benchs{}$\rangle$}
+benchmark is performed using less CPU cycles than the others. Looking at what
+happens on the bottom table for the symmetrical line, it can be seen that the
+cache holding the memory elements in the \benchs{} is actually providing them to
+the demanding cluster. This is in clear contradiction with the hypothetical
+protocol. Furthermore, this is not simply a case of having different activity
+for what should be the \texttt{S} state: the
+\texttt{$\langle$\benchx{},\benchi{},\benchi{}$\rangle$} line of the bottom
+table indicates that no such thing is happening for memory elements in the
+\benchx{} state. This proves that \benchs{} and \benchx{} are, in fact, two
+completely separate stable states. In other words, the NXP QorIQ T4240
+architecture does not actually use MESI as its coherence protocol.

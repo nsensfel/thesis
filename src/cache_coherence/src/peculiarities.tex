@@ -1,0 +1,11 @@
+\section{Peculiarities}
+
+\subsection{False Sharing}
+\label{sec:false_sharing}
+False sharing occurs when the memory used by two otherwise independent program
+objects end up in the same cache line. As a result, any access performed on
+either one of these objects leads to an access to at least part of the other
+object's memory. When two caches each frequently access one of those two
+objects, they impede each other by continuously having to re-take the
+permissions from the other cache.
+(todo: illustrated example)

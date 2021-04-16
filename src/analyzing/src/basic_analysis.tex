@@ -1,0 +1,124 @@
+\section{Analyzing Impact on Program Execution Time}
+\label{sec:analysis:wcet}
+This first analysis looks at the effects of interference on the programs
+themselves by computing their worst-case execution time. Note that when using
+the limited representation of the programs and of the architecture in the model
+proposed in Chapter~\ref{cha:modeling_cache_coherence}, the execution times
+resulting from the analyses performed in this chapter are unlikely to be those
+of the real applications and should therefore only be used in comparisons with
+other similarly obtained execution times. Indeed, such results can be used to
+compare the execution time of programs in different configurations, such as for
+computation of slowdown factors (see Definition~\ref{def:slowdown-factor}).
+Additionally, it is possible to obtain an estimate of the execution time that
+is due to cache coherence interference by comparing the execution time of each
+program with that of a configuration in which there are no shared variables.
+This configuration might not be viable in the real system, but its analysis
+provides valuable information as a reference point, since it corresponds to the
+programs neither benefiting nor suffering from cache coherence while still
+having to account for concurrent accesses to the system's main memory.
+
+When looking at the execution time of programs without shared variables,
+the results do not include much of the interference from cache coherence, but
+still has the cost of concurrent memory accesses. This particular cost may
+actually be lowered by cache coherence. Indeed, having programs running in
+parallel and sharing data using cache coherence can lead to run-times
+increasing because cache permissions are lost, but it can also lead to
+run-times decreasing because more values are available in caches and may thus
+be retrieved faster than when those are only in the main memory.
+
+By removing the execution time obtained by the analysis of each programs without
+shared variables from their execution time with those shared variables, the time
+lost or gained because of cache coherence is obtained. More precisely, given
+$W_{s}$ the execution time of a program running in parallel with other programs
+and having shared variable and $W_{p}$ the equivalent without any shared
+variables, $T_{cc} = W_{s} - W_{p}$ corresponds to the execution time added by
+cache coherence interference.
+
+To compute the $W_{s}$ and $W_{p}$ using the model described in
+Chapter~\ref{cha:modeling_cache_coherence}, UPPAAL's model checking is made to
+find the maximum value of the \lstinline{runtime} clock of a core automaton
+outside of the \textit{Terminated} location
+(e.g.~\lstinline!sup{not Core1.Terminated}: Core1.runtime! for \texttt{Core1}).
+
+%\todomsg{Beware, lstinline has a weird font in these environments}
+\begin{example}[Slowdown Factors on the Model from Section~\ref{sec:analysis:demo_model}]
+Figure~\ref{fig:analysis:wcet_calc} shows different worst case execution times
+for the model from Section~\ref{sec:analysis:demo_model}. The first line
+corresponds to the result of \lstinline!sup{not Core1.Terminated}: Core1.runtime!
+and the second is the equivalent for the other core. The \textit{Shared
+Variables} results are obtained by simply making this query on the instantiated
+model from Section~\ref{sec:analysis:demo_model} as-is, with both programs
+running in parallel unmodified. The \textit{No Shared Variables} results are
+obtained by shifting all addresses from the program running on Core2 in order
+to avoid sharing any address between the two cores. In this case, all addresses
+from Figure~\ref{fig:analysis:demo_prog2} are increased by $3$. $T_{cc}$
+corresponds to the execution time which is due to by cache coherence
+interference. Lastly, an example of alternative configuration in which each
+program runs alone on the platform is also analyzed: the \textit{Isolation}
+configuration is achieved by replacing the other program with one composed only
+of a single \lstinline!INSTR_END! instruction.
+
+\begin{figure}[hbt!]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\cline{2-5}
+\multicolumn{1}{c|}{}
+      & Shared Variables & No Shared Variables & $T_{cc}$ & Isolation \\
+\hline
+Core1 & 2652 & 1102 & 1550 & 702\\
+\hline
+Core2 & 2452 & 1452 & 1000 & 904\\
+\hline
+\end{tabular}
+\caption{WCET Analysis of Model from Section~\ref{sec:analysis:demo_model}}
+\label{fig:analysis:wcet_calc}
+\end{figure}
+
+The results of the analysis are as follows:
+\begin{itemize}
+\item
+   Core1 suffers a slowdown factor of $2652/702 = 3.77$ when running in
+   parallel with Core2, compared to in isolation.
+\item
+   Core2 suffers a slowdown factor of $2452/904 = 2.71$ when running in
+   parallel with Core1, compared to in isolation.
+\item
+   Running the two programs in isolation one after the other has a maximum
+   execution time of $702 + 904 = 1606$.
+\item
+   Running the two programs with their shared variables in parallel has a
+   maximum execution time of $\max(2652, 2452) = 2652$.
+\item
+   Running the two programs without shared variables in parallel has a
+   maximum execution time of $\max(1102, 1452) = 1452$.
+\item
+   Approximately $(1550/2652)*100=58.44$ percent of Core1's worst execution time
+   is caused by cache coherence interference.
+\item
+   Approximately $(1000/2452)*100=40.78$ percent of Core2's worst execution time
+   is caused by cache coherence interference.
+\end{itemize}
+
+The following observations can thus be made:
+\begin{itemize}
+\item The programs in this example greatly interfere with each other.
+\item
+   Running the two programs in isolation one after the other actually leads to
+   a WCET lower than running both in parallel with shared variables:
+   $1606 < 2652$. As a result, if the nature of the programs allow it, running
+   the programs one after the other is preferable.
+\item
+   Running the two programs in parallel but with no shared variables is
+   preferable to running them in isolation one after the other ($1452 < 1606$).
+   This is also a result which is only exploitable if the nature of the programs
+   allow them to be transformed into an alternative that either uses separate
+   copies of the shared variables or uses less shared variables altogether.
+\end{itemize}
+\end{example}
+
+Thus, comparing WCET in different configurations of the architecture provides
+the user with an understanding of how much interference is affecting the
+programs because of cache coherence. However, this WCET analysis shows the
+accumulation of all interference. In order to better control this interference,
+a more precise analysis of the causes of this interference has to be performed.
+This starts with determining which instructions are impacted by interference.

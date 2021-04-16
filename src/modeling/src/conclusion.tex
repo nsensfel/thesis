@@ -1,0 +1,25 @@
+\section{Conclusion}
+This chapter presented a way to model a multi-core architecture with a focus on
+cache coherence mechanisms.
+
+The use of a network of timed automata proved to be effective in allowing a
+readable and modular description of the system. Indeed, each component can be
+modeled independently, with only synchronizations with other components needing
+to be accounted for.
+
+The model presented in this chapter can be configured to match the user's
+architecture through easily configurable parameters. The addition of an
+arbitrary number of cores with their caches and FIFOs is also supported and is
+made easy by UPPAAL's automaton template features.
+
+The coherence protocol is defined outside of the model, solely using the
+notions from Chapter~\ref{cha:cache_coherence}. This makes it possible for the
+user to change the resulting model's cache coherence protocol without having to
+understand the way it is modeled. Furthermore, switching from
+one protocol to another can be done automatically using the provided tool,
+making the whole process very approachable.
+
+Once the platform has been modeled, formal analyses can be performed. The next
+chapter not only explores the results that can be obtained with the model as
+described here, but also introduces definitions for the interference generated
+by cache coherence and explains how the model can be used to expose them.
